@@ -9,6 +9,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173", "http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddScoped<DeviceQueryService>();
@@ -20,6 +31,8 @@ await DatabaseSeeder.SeedAsync(app.Services);
 
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseCors("Frontend");
 
 app.MapGet("/", () => Results.Redirect("/swagger"));
 
