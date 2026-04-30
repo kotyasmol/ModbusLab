@@ -15,3 +15,15 @@ export type RegisterOperationResult = {
   value: number | null;
   message: string;
 };
+
+export type ModbusLogDto = {
+  id: string;
+  timestampUtc: string;
+  slaveDeviceId: string | null;
+  slaveAddress: number;
+  functionCode: number;
+  registerAddress: number;
+  value: number | null;
+  status: number;
+  message: string;
+};

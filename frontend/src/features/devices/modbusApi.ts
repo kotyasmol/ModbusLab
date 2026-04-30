@@ -1,5 +1,6 @@
-import { apiPost } from "../../shared/api/apiClient";
+import { apiGet, apiPost } from "../../shared/api/apiClient";
 import type {
+  ModbusLogDto,
   ReadRegisterRequest,
   RegisterOperationResult,
   WriteRegisterRequest,
@@ -21,4 +22,8 @@ export function writeRegister(
     "/api/modbus/write",
     request
   );
+}
+
+export function getModbusLogs(): Promise<ModbusLogDto[]> {
+  return apiGet<ModbusLogDto[]>("/api/modbus/logs");
 }
