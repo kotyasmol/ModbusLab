@@ -460,3 +460,61 @@ tbody tr:hover {
   color: #fde68a;
   background: rgba(245, 158, 11, 0.12);
 }
+.operation-sections {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.operation-box {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.42);
+}
+
+.operation-box h4 {
+  margin: 0 0 6px;
+  color: #f8fafc;
+  font-size: 15px;
+}
+
+.read-operation-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.read-operation-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.read-operation-form input {
+  width: 100%;
+  padding: 12px 14px;
+  color: #e5e7eb;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  background: #020617;
+  outline: none;
+}
+
+.read-operation-form input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+}
+
+@media (max-width: 900px) {
+  .read-operation-form {
+    grid-template-columns: 1fr;
+  }
+}

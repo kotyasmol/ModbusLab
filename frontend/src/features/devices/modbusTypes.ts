@@ -27,3 +27,11 @@ export type ModbusLogDto = {
   status: number;
   message: string;
 };
+
+export type RegisterValueChangedEvent = {
+  deviceId: string;
+  registerDefinitionId: string;
+  registerAddress: number;
+  value: number;
+  updatedAtUtc: string;
+};

@@ -1,9 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getDeviceRegisters, getDevices } from "./features/devices/devicesApi";
-import { getModbusLogs, writeRegister } from "./features/devices/modbusApi";
-import type { ModbusLogDto, RegisterOperationResult } from "./features/devices/modbusTypes";
-import type { DeviceDto } from "./features/devices/types";
+import {
+  getModbusLogs,
+  readRegister,
+  writeRegister,
+} from "./features/devices/modbusApi";
+import type {
+  ModbusLogDto,
+  RegisterOperationResult,
+  RegisterValueChangedEvent,
+} from "./features/devices/modbusTypes";
+import type { DeviceDto, RegisterDto } from "./features/devices/types";
+import { createModbusHubConnection } from "./shared/api/modbusHubConnection";
 import "./App.css";
 
 function toOperationResult(error: unknown): RegisterOperationResult {
@@ -91,9 +100,14 @@ function formatTimestamp(timestampUtc: string): string {
 function App() {
   const queryClient = useQueryClient();
 
+  const [realtimeStatus, setRealtimeStatus] = useState("Connecting");
   const [selectedDevice, setSelectedDevice] = useState<DeviceDto | null>(null);
-  const [registerAddress, setRegisterAddress] = useState("1300");
-  const [registerValue, setRegisterValue] = useState("1");
+
+  const [readRegisterAddress, setReadRegisterAddress] = useState("1305");
+
+  const [writeRegisterAddress, setWriteRegisterAddress] = useState("1300");
+  const [writeRegisterValue, setWriteRegisterValue] = useState("1");
+
   const [operationResult, setOperationResult] =
     useState<RegisterOperationResult | null>(null);
 
@@ -112,6 +126,80 @@ function App() {
     queryKey: ["modbus-logs"],
     queryFn: getModbusLogs,
     refetchInterval: 5000,
+  });
+
+  useEffect(() => {
+    const connection = createModbusHubConnection();
+
+    connection.on(
+      "RegisterValueChanged",
+      (event: RegisterValueChangedEvent) => {
+        queryClient.setQueryData<RegisterDto[]>(
+          ["device-registers", event.deviceId],
+          (currentRegisters) => {
+            if (!currentRegisters) {
+              return currentRegisters;
+            }
+
+            return currentRegisters.map((register) => {
+              if (register.definitionId !== event.registerDefinitionId) {
+                return register;
+              }
+
+              return {
+                ...register,
+                currentValue: event.value,
+                updatedAtUtc: event.updatedAtUtc,
+              };
+            });
+          }
+        );
+      }
+    );
+
+    connection.onreconnecting(() => {
+      setRealtimeStatus("Reconnecting");
+    });
+
+    connection.onreconnected(() => {
+      setRealtimeStatus("Connected");
+    });
+
+    connection.onclose(() => {
+      setRealtimeStatus("Disconnected");
+    });
+
+    connection
+      .start()
+      .then(() => {
+        setRealtimeStatus("Connected");
+      })
+      .catch(() => {
+        setRealtimeStatus("Disconnected");
+      });
+
+    return () => {
+      void connection.stop();
+    };
+  }, [queryClient]);
+
+  const readRegisterMutation = useMutation({
+    mutationFn: readRegister,
+    onSuccess: async (result) => {
+      setOperationResult(result);
+
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["device-registers", selectedDevice?.id],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["modbus-logs"],
+        }),
+      ]);
+    },
+    onError: (error) => {
+      setOperationResult(toOperationResult(error));
+    },
   });
 
   const writeRegisterMutation = useMutation({
@@ -133,6 +221,37 @@ function App() {
     },
   });
 
+  function handleReadRegister() {
+    if (!selectedDevice) {
+      setOperationResult({
+        isSuccess: false,
+        status: 2,
+        value: null,
+        message: "Сначала выбери устройство.",
+      });
+
+      return;
+    }
+
+    const address = Number(readRegisterAddress);
+
+    if (Number.isNaN(address)) {
+      setOperationResult({
+        isSuccess: false,
+        status: 2,
+        value: null,
+        message: "Адрес регистра должен быть числом.",
+      });
+
+      return;
+    }
+
+    readRegisterMutation.mutate({
+      slaveAddress: selectedDevice.slaveAddress,
+      registerAddress: address,
+    });
+  }
+
   function handleWriteRegister() {
     if (!selectedDevice) {
       setOperationResult({
@@ -145,8 +264,8 @@ function App() {
       return;
     }
 
-    const address = Number(registerAddress);
-    const value = Number(registerValue);
+    const address = Number(writeRegisterAddress);
+    const value = Number(writeRegisterValue);
 
     if (Number.isNaN(address) || Number.isNaN(value)) {
       setOperationResult({
@@ -201,7 +320,7 @@ function App() {
             <span className="status-label">Backend</span>
             <strong>ASP.NET Core + PostgreSQL</strong>
           </div>
-          <span className="status-dot">Online-ready</span>
+          <span className="status-dot">SignalR: {realtimeStatus}</span>
         </div>
       </section>
 
@@ -263,38 +382,83 @@ function App() {
           {selectedDevice && (
             <section className="operation-panel">
               <div>
-                <h3>Запись регистра</h3>
+                <h3>Операции с регистрами</h3>
                 <p className="muted">
-                  Например: адрес 1300, значение 1 — включение Power control.
+                  Чтение выполняет FC03, запись выполняет FC06.
                 </p>
               </div>
 
-              <div className="operation-form">
-                <label>
-                  Адрес регистра
-                  <input
-                    value={registerAddress}
-                    onChange={(event) => setRegisterAddress(event.target.value)}
-                    inputMode="numeric"
-                  />
-                </label>
+              <div className="operation-sections">
+                <div className="operation-box">
+                  <div>
+                    <h4>Чтение регистра</h4>
+                    <p className="muted">
+                      Например: адрес 1305 — Output voltage.
+                    </p>
+                  </div>
 
-                <label>
-                  Значение
-                  <input
-                    value={registerValue}
-                    onChange={(event) => setRegisterValue(event.target.value)}
-                    inputMode="numeric"
-                  />
-                </label>
+                  <div className="read-operation-form">
+                    <label>
+                      Адрес регистра
+                      <input
+                        value={readRegisterAddress}
+                        onChange={(event) =>
+                          setReadRegisterAddress(event.target.value)
+                        }
+                        inputMode="numeric"
+                      />
+                    </label>
 
-                <button
-                  className="primary-button"
-                  onClick={handleWriteRegister}
-                  disabled={writeRegisterMutation.isPending}
-                >
-                  {writeRegisterMutation.isPending ? "Запись..." : "Записать"}
-                </button>
+                    <button
+                      className="secondary-button"
+                      onClick={handleReadRegister}
+                      disabled={readRegisterMutation.isPending}
+                    >
+                      {readRegisterMutation.isPending ? "Чтение..." : "Прочитать"}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="operation-box">
+                  <div>
+                    <h4>Запись регистра</h4>
+                    <p className="muted">
+                      Например: адрес 1300, значение 1 — Power control.
+                    </p>
+                  </div>
+
+                  <div className="operation-form">
+                    <label>
+                      Адрес регистра
+                      <input
+                        value={writeRegisterAddress}
+                        onChange={(event) =>
+                          setWriteRegisterAddress(event.target.value)
+                        }
+                        inputMode="numeric"
+                      />
+                    </label>
+
+                    <label>
+                      Значение
+                      <input
+                        value={writeRegisterValue}
+                        onChange={(event) =>
+                          setWriteRegisterValue(event.target.value)
+                        }
+                        inputMode="numeric"
+                      />
+                    </label>
+
+                    <button
+                      className="primary-button"
+                      onClick={handleWriteRegister}
+                      disabled={writeRegisterMutation.isPending}
+                    >
+                      {writeRegisterMutation.isPending ? "Запись..." : "Записать"}
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {operationResult && (

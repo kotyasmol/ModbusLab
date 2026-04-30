@@ -3,11 +3,15 @@ using ModbusLab.Application.Devices;
 using ModbusLab.Application.Modbus;
 using ModbusLab.Infrastructure;
 using ModbusLab.Infrastructure.Persistence;
+using ModbusLab.Api.BackgroundServices;
+using ModbusLab.Api.Realtime;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSignalR();
+builder.Services.AddHostedService<RandomRegisterSimulationWorker>();
 
 builder.Services.AddCors(options =>
 {
@@ -16,7 +20,8 @@ builder.Services.AddCors(options =>
         policy
             .WithOrigins("http://localhost:5173", "http://localhost:3000")
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
@@ -38,5 +43,7 @@ app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.MapDeviceEndpoints();
 app.MapModbusEndpoints();
+
+app.MapHub<ModbusHub>("/hubs/modbus");
 
 app.Run();
