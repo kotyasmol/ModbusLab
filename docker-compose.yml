@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: modbuslab-postgres
+    environment:
+      POSTGRES_DB: modbuslab
+      POSTGRES_USER: modbuslab
+      POSTGRES_PASSWORD: modbuslab_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - modbuslab-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  modbuslab-postgres-data:

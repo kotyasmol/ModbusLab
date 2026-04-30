@@ -25,6 +25,12 @@ public sealed class ModbusRegisterService
         ReadRegisterRequest request,
         CancellationToken cancellationToken = default)
     {
+        if (!IsValidSlaveAddress(request.SlaveAddress))
+            return RegisterOperationResult.Rejected("Modbus slave address must be between 1 and 247.");
+
+        if (!IsValidRegisterAddress(request.RegisterAddress))
+            return RegisterOperationResult.Rejected("Register address cannot be negative.");
+
         var device = await _deviceRepository.GetBySlaveAddressAsync(
             request.SlaveAddress,
             cancellationToken);
@@ -113,6 +119,12 @@ public sealed class ModbusRegisterService
         WriteRegisterRequest request,
         CancellationToken cancellationToken = default)
     {
+        if (!IsValidSlaveAddress(request.SlaveAddress))
+            return RegisterOperationResult.Rejected("Modbus slave address must be between 1 and 247.");
+
+        if (!IsValidRegisterAddress(request.RegisterAddress))
+            return RegisterOperationResult.Rejected("Register address cannot be negative.");
+
         var device = await _deviceRepository.GetBySlaveAddressAsync(
             request.SlaveAddress,
             cancellationToken);
@@ -250,5 +262,15 @@ public sealed class ModbusRegisterService
             value);
 
         await _logRepository.AddAsync(logEntry, cancellationToken);
+    }
+
+    private static bool IsValidSlaveAddress(int slaveAddress)
+    {
+        return slaveAddress is >= 1 and <= 247;
+    }
+
+    private static bool IsValidRegisterAddress(int registerAddress)
+    {
+        return registerAddress >= 0;
     }
 }

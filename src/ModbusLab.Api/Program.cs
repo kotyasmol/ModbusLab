@@ -1,26 +1,27 @@
 using ModbusLab.Application.Abstractions;
 using ModbusLab.Application.Devices;
 using ModbusLab.Application.Modbus;
-using ModbusLab.Infrastructure.InMemory;
+using ModbusLab.Infrastructure;
+using ModbusLab.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<InMemoryStore>();
-
-builder.Services.AddSingleton<IDeviceRepository, InMemoryDeviceRepository>();
-builder.Services.AddSingleton<IRegisterRepository, InMemoryRegisterRepository>();
-builder.Services.AddSingleton<IModbusLogRepository, InMemoryModbusLogRepository>();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddScoped<DeviceQueryService>();
 builder.Services.AddScoped<ModbusRegisterService>();
 
 var app = builder.Build();
 
+await DatabaseSeeder.SeedAsync(app.Services);
+
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.MapGet("/api/devices", async (
     DeviceQueryService deviceQueryService,
@@ -92,5 +93,4 @@ app.MapGet("/api/modbus/logs", async (
 .WithTags("Modbus")
 .WithSummary("Get latest Modbus operation logs");
 
-app.MapGet("/", () => Results.Redirect("/swagger"));
 app.Run();
