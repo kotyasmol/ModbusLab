@@ -1,41 +1,96 @@
+using ModbusLab.Application.Abstractions;
+using ModbusLab.Application.Devices;
+using ModbusLab.Application.Modbus;
+using ModbusLab.Infrastructure.InMemory;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddSingleton<InMemoryStore>();
+
+builder.Services.AddSingleton<IDeviceRepository, InMemoryDeviceRepository>();
+builder.Services.AddSingleton<IRegisterRepository, InMemoryRegisterRepository>();
+builder.Services.AddSingleton<IModbusLogRepository, InMemoryModbusLogRepository>();
+
+builder.Services.AddScoped<DeviceQueryService>();
+builder.Services.AddScoped<ModbusRegisterService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
+app.MapGet("/api/devices", async (
+    DeviceQueryService deviceQueryService,
+    CancellationToken cancellationToken) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    var devices = await deviceQueryService.GetDevicesAsync(cancellationToken);
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    return Results.Ok(devices);
 })
-.WithName("GetWeatherForecast");
+.WithTags("Devices")
+.WithSummary("Get all Modbus slave devices");
 
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+app.MapGet("/api/devices/{deviceId:guid}/registers", async (
+    Guid deviceId,
+    DeviceQueryService deviceQueryService,
+    CancellationToken cancellationToken) =>
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+    var registers = await deviceQueryService.GetDeviceRegistersAsync(
+        deviceId,
+        cancellationToken);
+
+    return Results.Ok(registers);
+})
+.WithTags("Devices")
+.WithSummary("Get registers for selected device");
+
+app.MapPost("/api/modbus/read", async (
+    ReadRegisterRequest request,
+    ModbusRegisterService modbusRegisterService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await modbusRegisterService.ReadAsync(
+        request,
+        cancellationToken);
+
+    return result.IsSuccess
+        ? Results.Ok(result)
+        : Results.BadRequest(result);
+})
+.WithTags("Modbus")
+.WithSummary("Read Modbus register");
+
+app.MapPost("/api/modbus/write", async (
+    WriteRegisterRequest request,
+    ModbusRegisterService modbusRegisterService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await modbusRegisterService.WriteAsync(
+        request,
+        cancellationToken);
+
+    return result.IsSuccess
+        ? Results.Ok(result)
+        : Results.BadRequest(result);
+})
+.WithTags("Modbus")
+.WithSummary("Write Modbus register");
+
+app.MapGet("/api/modbus/logs", async (
+    IModbusLogRepository logRepository,
+    CancellationToken cancellationToken) =>
+{
+    var logs = await logRepository.GetLatestAsync(
+        count: 100,
+        cancellationToken);
+
+    return Results.Ok(logs);
+})
+.WithTags("Modbus")
+.WithSummary("Get latest Modbus operation logs");
+
+app.MapGet("/", () => Results.Redirect("/swagger"));
+app.Run();
