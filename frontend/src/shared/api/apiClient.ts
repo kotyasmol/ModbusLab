@@ -9,3 +9,24 @@ export async function apiGet<T>(url: string): Promise<T> {
 
   return response.json() as Promise<T>;
 }
+
+export async function apiPost<TRequest, TResponse>(
+  url: string,
+  body: TRequest
+): Promise<TResponse> {
+  const response = await fetch(`${API_BASE_URL}${url}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = (await response.json()) as TResponse;
+
+  if (!response.ok) {
+    throw data;
+  }
+
+  return data;
+}

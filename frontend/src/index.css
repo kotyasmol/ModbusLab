@@ -7,11 +7,9 @@
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
+
   color: #f8fafc;
-  background:
-    radial-gradient(circle at top left, rgba(14, 165, 233, 0.18), transparent 32%),
-    radial-gradient(circle at top right, rgba(168, 85, 247, 0.14), transparent 36%),
-    #020617;
+  background: #020617;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -22,9 +20,23 @@
   box-sizing: border-box;
 }
 
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: #020617;
+}
+
 body {
   margin: 0;
   min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(14, 165, 233, 0.18), transparent 32%),
+    radial-gradient(circle at top right, rgba(168, 85, 247, 0.14), transparent 36%),
+    linear-gradient(135deg, #020617 0%, #0f172a 45%, #111827 100%);
+}
+
+#root {
   min-height: 100vh;
 }
 
@@ -33,4 +45,8 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+button {
+  border: none;
 }
