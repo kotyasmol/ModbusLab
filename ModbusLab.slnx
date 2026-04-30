@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ModbusLab.Api/ModbusLab.Api.csproj" />
+    <Project Path="src/ModbusLab.Application/ModbusLab.Application.csproj" />
+    <Project Path="src/ModbusLab.Domain/ModbusLab.Domain.csproj" />
+    <Project Path="src/ModbusLab.Infrastructure/ModbusLab.Infrastructure.csproj" />
+  </Folder>
+</Solution>

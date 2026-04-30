@@ -1,0 +1,56 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "ModbusLab.Infrastructure/1.0.0": {
+        "dependencies": {
+          "ModbusLab.Application": "1.0.0",
+          "ModbusLab.Domain": "1.0.0"
+        },
+        "runtime": {
+          "ModbusLab.Infrastructure.dll": {}
+        }
+      },
+      "ModbusLab.Application/1.0.0": {
+        "dependencies": {
+          "ModbusLab.Domain": "1.0.0"
+        },
+        "runtime": {
+          "ModbusLab.Application.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "ModbusLab.Domain/1.0.0": {
+        "runtime": {
+          "ModbusLab.Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "ModbusLab.Infrastructure/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ModbusLab.Application/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ModbusLab.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
