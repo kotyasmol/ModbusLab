@@ -77,6 +77,8 @@ Persistence/
   EfDeviceRepository.cs
   EfModbusLogRepository.cs
   EfRegisterRepository.cs
+  EfTestProfileRepository.cs
+  EfTestRunRepository.cs
 
 [metadataReferences]
 ../

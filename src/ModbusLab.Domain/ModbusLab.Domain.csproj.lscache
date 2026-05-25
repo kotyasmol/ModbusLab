@@ -69,6 +69,14 @@ Registers/
  RegisterAccessMode.cs
  RegisterDefinition.cs
  RegisterValue.cs
+Testing/
+ TestProfile.cs
+ TestRun.cs
+ TestRunStatus.cs
+ TestStep.cs
+ TestStepResult.cs
+ TestStepResultStatus.cs
+ TestStepType.cs
 
 [metadataReferences]
 <DOTNET>/packs/Microsoft.NETCore.App.Ref/10.0.6/ref/net10.0/

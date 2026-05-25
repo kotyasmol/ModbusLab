@@ -1,6 +1,4 @@
 @ModbusLab.Api_HostAddress = http://localhost:5199
 
-GET {{ModbusLab.Api_HostAddress}}/weatherforecast/
+GET {{ModbusLab.Api_HostAddress}}/api/devices/
 Accept: application/json
-
-###

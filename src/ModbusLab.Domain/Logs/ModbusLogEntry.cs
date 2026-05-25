@@ -8,8 +8,6 @@ public sealed class ModbusLogEntry
 
     public DateTime TimestampUtc { get; private set; }
 
-    public Guid? SlaveDeviceId { get; private set; }
-
     public int SlaveAddress { get; private set; }
 
     public ModbusFunctionCode FunctionCode { get; private set; }
@@ -21,6 +19,8 @@ public sealed class ModbusLogEntry
     public ModbusOperationStatus Status { get; private set; }
 
     public string Message { get; private set; }
+
+    public Guid? SlaveDeviceId { get; private set; }
 
     private ModbusLogEntry()
     {
@@ -47,66 +47,12 @@ public sealed class ModbusLogEntry
 
         Id = Guid.NewGuid();
         TimestampUtc = DateTime.UtcNow;
-        SlaveDeviceId = slaveDeviceId;
         SlaveAddress = slaveAddress;
         FunctionCode = functionCode;
         RegisterAddress = registerAddress;
-        Value = value;
         Status = status;
         Message = message;
-    }
-
-    public static ModbusLogEntry Success(
-        int slaveAddress,
-        ModbusFunctionCode functionCode,
-        int registerAddress,
-        string message,
-        Guid? slaveDeviceId = null,
-        int? value = null)
-    {
-        return new ModbusLogEntry(
-            slaveAddress,
-            functionCode,
-            registerAddress,
-            ModbusOperationStatus.Success,
-            message,
-            slaveDeviceId,
-            value);
-    }
-
-    public static ModbusLogEntry Failed(
-        int slaveAddress,
-        ModbusFunctionCode functionCode,
-        int registerAddress,
-        string message,
-        Guid? slaveDeviceId = null,
-        int? value = null)
-    {
-        return new ModbusLogEntry(
-            slaveAddress,
-            functionCode,
-            registerAddress,
-            ModbusOperationStatus.Failed,
-            message,
-            slaveDeviceId,
-            value);
-    }
-
-    public static ModbusLogEntry Rejected(
-        int slaveAddress,
-        ModbusFunctionCode functionCode,
-        int registerAddress,
-        string message,
-        Guid? slaveDeviceId = null,
-        int? value = null)
-    {
-        return new ModbusLogEntry(
-            slaveAddress,
-            functionCode,
-            registerAddress,
-            ModbusOperationStatus.Rejected,
-            message,
-            slaveDeviceId,
-            value);
+        SlaveDeviceId = slaveDeviceId;
+        Value = value;
     }
 }

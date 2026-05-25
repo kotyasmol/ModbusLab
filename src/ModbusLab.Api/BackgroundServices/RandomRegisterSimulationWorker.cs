@@ -138,8 +138,8 @@ public sealed class RandomRegisterSimulationWorker : BackgroundService
     {
         var value = definition.Address switch
         {
-            1305 => Random.Shared.Next(11750, 12251), // Output voltage, mV
-            1306 => Random.Shared.Next(180, 421),     // Output current, mA
+            1305 => Random.Shared.Next(11750, 12251),
+            1306 => Random.Shared.Next(180, 421),
             _ => GenerateGenericValue(definition)
         };
 
@@ -165,3 +165,10 @@ public sealed class RandomRegisterSimulationWorker : BackgroundService
         return value;
     }
 }
+
+public sealed record RegisterValueChangedEvent(
+    Guid DeviceId,
+    Guid RegisterDefinitionId,
+    int RegisterAddress,
+    int Value,
+    DateTime UpdatedAtUtc);

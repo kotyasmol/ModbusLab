@@ -26,6 +26,8 @@ public static class DependencyInjection
         services.AddScoped<IDeviceRepository, EfDeviceRepository>();
         services.AddScoped<IRegisterRepository, EfRegisterRepository>();
         services.AddScoped<IModbusLogRepository, EfModbusLogRepository>();
+        services.AddScoped<ITestProfileRepository, EfTestProfileRepository>();
+        services.AddScoped<ITestRunRepository, EfTestRunRepository>();
 
         return services;
     }

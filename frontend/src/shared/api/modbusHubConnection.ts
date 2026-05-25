@@ -1,6 +1,6 @@
 import * as signalR from "@microsoft/signalr";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5199";
 
 export function createModbusHubConnection() {
   return new signalR.HubConnectionBuilder()

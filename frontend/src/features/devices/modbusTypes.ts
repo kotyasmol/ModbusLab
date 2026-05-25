@@ -19,13 +19,13 @@ export type RegisterOperationResult = {
 export type ModbusLogDto = {
   id: string;
   timestampUtc: string;
-  slaveDeviceId: string | null;
   slaveAddress: number;
   functionCode: number;
   registerAddress: number;
   value: number | null;
   status: number;
   message: string;
+  slaveDeviceId: string | null;
 };
 
 export type RegisterValueChangedEvent = {

@@ -1,10 +1,11 @@
+using ModbusLab.Api.BackgroundServices;
 using ModbusLab.Api.Endpoints;
+using ModbusLab.Api.Realtime;
 using ModbusLab.Application.Devices;
 using ModbusLab.Application.Modbus;
+using ModbusLab.Application.Testing;
 using ModbusLab.Infrastructure;
 using ModbusLab.Infrastructure.Persistence;
-using ModbusLab.Api.BackgroundServices;
-using ModbusLab.Api.Realtime;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,8 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddScoped<DeviceQueryService>();
 builder.Services.AddScoped<ModbusRegisterService>();
+builder.Services.AddScoped<TestProfileService>();
+builder.Services.AddScoped<TestExecutionService>();
 
 var app = builder.Build();
 
@@ -43,6 +46,8 @@ app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.MapDeviceEndpoints();
 app.MapModbusEndpoints();
+app.MapTestProfileEndpoints();
+app.MapTestRunEndpoints();
 
 app.MapHub<ModbusHub>("/hubs/modbus");
 

@@ -58,6 +58,8 @@ Abstractions/
  IDeviceRepository.cs
  IModbusLogRepository.cs
  IRegisterRepository.cs
+ ITestProfileRepository.cs
+ ITestRunRepository.cs
 Devices/
  DeviceDto.cs
  DeviceQueryService.cs
@@ -71,6 +73,15 @@ obj/Debug/net10.0/
  ModbusLab.Application.AssemblyInfo.cs
  ModbusLab.Application.GlobalUsings.g.cs
 Registers/RegisterDto.cs
+Testing/
+ CreateTestProfileRequest.cs
+ CreateTestStepRequest.cs
+ TestExecutionService.cs
+ TestProfileDto.cs
+ TestProfileService.cs
+ TestRunDto.cs
+ TestStepDto.cs
+ TestStepResultDto.cs
 
 [metadataReferences]
 ../ModbusLab.Domain/obj/Debug/net10.0/ref/ModbusLab.Domain.dll
