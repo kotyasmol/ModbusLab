@@ -1,3 +1,7 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using ModbusLab.Api.Auth;
 using ModbusLab.Api.BackgroundServices;
 using ModbusLab.Api.Endpoints;
 using ModbusLab.Api.Realtime;
@@ -28,6 +32,53 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
+var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+var jwtAudience = builder.Configuration["Jwt:Audience"];
+var jwtSecret = builder.Configuration["Jwt:Secret"];
+
+if (string.IsNullOrWhiteSpace(jwtIssuer) ||
+    string.IsNullOrWhiteSpace(jwtAudience) ||
+    string.IsNullOrWhiteSpace(jwtSecret))
+{
+    throw new InvalidOperationException("JWT settings are not configured.");
+}
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            ClockSkew = TimeSpan.FromMinutes(2)
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+
+                if (!string.IsNullOrWhiteSpace(accessToken) &&
+                    path.StartsWithSegments("/hubs/modbus"))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization();
+builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<DeviceQueryService>();
 builder.Services.AddScoped<ModbusRegisterService>();
 builder.Services.AddScoped<TestProfileService>();
@@ -41,14 +92,18 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseCors("Frontend");
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGet("/", () => Results.Redirect("/swagger"));
 
+app.MapAuthEndpoints();
 app.MapDeviceEndpoints();
 app.MapModbusEndpoints();
 app.MapTestProfileEndpoints();
 app.MapTestRunEndpoints();
 
-app.MapHub<ModbusHub>("/hubs/modbus");
+app.MapHub<ModbusHub>("/hubs/modbus")
+    .RequireAuthorization();
 
 app.Run();

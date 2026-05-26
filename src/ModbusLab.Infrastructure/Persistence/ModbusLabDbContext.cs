@@ -3,6 +3,7 @@ using ModbusLab.Domain.Devices;
 using ModbusLab.Domain.Logs;
 using ModbusLab.Domain.Registers;
 using ModbusLab.Domain.Testing;
+using ModbusLab.Domain.Users;
 
 namespace ModbusLab.Infrastructure.Persistence;
 
@@ -30,6 +31,8 @@ public sealed class ModbusLabDbContext : DbContext
     public DbSet<TestRun> TestRuns => Set<TestRun>();
 
     public DbSet<TestStepResult> TestStepResults => Set<TestStepResult>();
+
+    public DbSet<AppUser> AppUsers => Set<AppUser>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -278,6 +281,37 @@ public sealed class ModbusLabDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(result => result.TestRunId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<AppUser>(entity =>
+        {
+            entity.ToTable("app_users");
+
+            entity.HasKey(user => user.Id);
+
+            entity.Property(user => user.UserName)
+                .HasMaxLength(64)
+                .IsRequired();
+
+            entity.Property(user => user.Email)
+                .HasMaxLength(256);
+
+            entity.Property(user => user.PasswordHash)
+                .HasMaxLength(512)
+                .IsRequired();
+
+            entity.Property(user => user.Role)
+                .HasMaxLength(32)
+                .IsRequired();
+
+            entity.Property(user => user.CreatedAtUtc)
+                .IsRequired();
+
+            entity.HasIndex(user => user.UserName)
+                .IsUnique();
+
+            entity.HasIndex(user => user.Email)
+                .IsUnique();
         });
     }
 }

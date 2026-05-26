@@ -145,7 +145,7 @@ export function MonitoringPage({
                       <td>{register.address}</td>
                       <td>{register.name}</td>
                       <td>{register.accessMode}</td>
-                      <td>{register.currentValue ?? "—"}</td>
+                      <td>{register.currentValue ?? "-"}</td>
                     </tr>
                   ))}
                 </tbody>

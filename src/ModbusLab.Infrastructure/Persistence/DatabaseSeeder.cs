@@ -1,8 +1,11 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using ModbusLab.Domain.Devices;
 using ModbusLab.Domain.Registers;
 using ModbusLab.Domain.Testing;
+using ModbusLab.Domain.Users;
 
 namespace ModbusLab.Infrastructure.Persistence;
 
@@ -14,7 +17,8 @@ public static class DatabaseSeeder
 
         var dbContext = scope.ServiceProvider.GetRequiredService<ModbusLabDbContext>();
 
-        await dbContext.Database.EnsureCreatedAsync();
+        await BaselineLegacyEnsureCreatedDatabaseAsync(dbContext);
+        await dbContext.Database.MigrateAsync();
 
         if (!await dbContext.DeviceTypes.AnyAsync())
         {
@@ -24,6 +28,11 @@ public static class DatabaseSeeder
         if (!await dbContext.TestProfiles.AnyAsync())
         {
             await SeedTestProfilesAsync(dbContext);
+        }
+
+        if (!await dbContext.AppUsers.AnyAsync())
+        {
+            await SeedUsersAsync(dbContext);
         }
     }
 
@@ -156,5 +165,119 @@ public static class DatabaseSeeder
                 maxValue: 800));
 
         await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task SeedUsersAsync(ModbusLabDbContext dbContext)
+    {
+        var user = new AppUser(
+            userName: "admin",
+            email: "admin@modbuslab.local",
+            passwordHash: "__pending__",
+            role: "Admin");
+
+        var passwordHasher = new PasswordHasher<AppUser>();
+        user.SetPasswordHash(passwordHasher.HashPassword(user, "Admin123!"));
+
+        await dbContext.AppUsers.AddAsync(user);
+        await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task BaselineLegacyEnsureCreatedDatabaseAsync(ModbusLabDbContext dbContext)
+    {
+        var hasExistingSchema = await TableExistsAsync(dbContext, "device_types");
+
+        if (!hasExistingSchema)
+            return;
+
+        await dbContext.Database.ExecuteSqlRawAsync("""
+            CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+                "MigrationId" character varying(150) NOT NULL,
+                "ProductVersion" character varying(32) NOT NULL,
+                CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
+            );
+            """);
+
+        var hasMigrationRows = await MigrationHistoryHasRowsAsync(dbContext);
+
+        if (hasMigrationRows)
+            return;
+
+        await dbContext.Database.ExecuteSqlRawAsync("""
+            INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+            VALUES
+                ('20260430061940_InitialCreate', '10.0.7'),
+                ('20260525110010_AddTestingModule', '10.0.7')
+            ON CONFLICT ("MigrationId") DO NOTHING;
+            """);
+    }
+
+    private static async Task<bool> TableExistsAsync(
+        ModbusLabDbContext dbContext,
+        string tableName)
+    {
+        var result = await ExecuteScalarAsync(
+            dbContext,
+            """
+            SELECT EXISTS (
+                SELECT 1
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                  AND table_name = @tableName
+            );
+            """,
+            tableName);
+
+        return result is true;
+    }
+
+    private static async Task<bool> MigrationHistoryHasRowsAsync(ModbusLabDbContext dbContext)
+    {
+        var result = await ExecuteScalarAsync(
+            dbContext,
+            """
+            SELECT EXISTS (
+                SELECT 1
+                FROM "__EFMigrationsHistory"
+            );
+            """);
+
+        return result is true;
+    }
+
+    private static async Task<object?> ExecuteScalarAsync(
+        ModbusLabDbContext dbContext,
+        string commandText,
+        string? tableName = null)
+    {
+        var connection = dbContext.Database.GetDbConnection();
+        var shouldClose = connection.State != ConnectionState.Open;
+
+        if (shouldClose)
+        {
+            await connection.OpenAsync();
+        }
+
+        try
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = commandText;
+
+            if (tableName is not null)
+            {
+                var parameter = command.CreateParameter();
+                parameter.ParameterName = "tableName";
+                parameter.Value = tableName;
+                command.Parameters.Add(parameter);
+            }
+
+            return await command.ExecuteScalarAsync();
+        }
+        finally
+        {
+            if (shouldClose)
+            {
+                await connection.CloseAsync();
+            }
+        }
     }
 }

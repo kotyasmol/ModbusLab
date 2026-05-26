@@ -8,7 +8,8 @@ public static class DeviceEndpoints
     {
         var group = app
             .MapGroup("/api/devices")
-            .WithTags("Devices");
+            .WithTags("Devices")
+            .RequireAuthorization();
 
         group.MapGet("/", async (
             DeviceQueryService deviceQueryService,

@@ -112,7 +112,7 @@ export function TestingPage(props: TestingPageProps) {
       </aside>
 
       <section className="panel content-panel">
-        {!selectedProfile && <div className="empty-state">Выбери профиль или создай новый.</div>}
+        {!selectedProfile && <div className="empty-state">Выберите профиль или создайте новый.</div>}
 
         {selectedProfile && (
           <>
@@ -154,17 +154,70 @@ export function TestingPage(props: TestingPageProps) {
 
             <div className="table-wrapper">
               <table>
-                <thead><tr><th>№</th><th>Шаг</th><th>Тип</th></tr></thead>
-                <tbody>{selectedProfile.steps.map((step) => <tr key={step.id}><td>{step.orderIndex}</td><td>{step.name}</td><td>{step.type}</td></tr>)}</tbody>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Шаг</th>
+                    <th>Тип</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedProfile.steps.map((step) => (
+                    <tr key={step.id}>
+                      <td>{step.orderIndex}</td>
+                      <td>{step.name}</td>
+                      <td>{step.type}</td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
             </div>
 
-            {lastRun && <div className="table-wrapper"><table><thead><tr><th>Шаг</th><th>Статус</th><th>Сообщение</th></tr></thead><tbody>{lastRun.steps.map((step) => <tr key={step.id}><td>{step.stepName}</td><td><span className={getStatusClass(step.status)}>{step.status}</span></td><td>{step.message}</td></tr>)}</tbody></table></div>}
+            {lastRun && (
+              <div className="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Шаг</th>
+                      <th>Статус</th>
+                      <th>Сообщение</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lastRun.steps.map((step) => (
+                      <tr key={step.id}>
+                        <td>{step.stepName}</td>
+                        <td>
+                          <span className={getStatusClass(step.status)}>{step.status}</span>
+                        </td>
+                        <td>{step.message}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
             <div className="table-wrapper">
               <table>
-                <thead><tr><th>Время</th><th>Профиль</th><th>Статус</th></tr></thead>
-                <tbody>{testRunsQuery.data?.map((run) => <tr key={run.id}><td>{formatTimestamp(run.startedAtUtc)}</td><td>{run.profileName}</td><td>{run.status}</td></tr>)}</tbody>
+                <thead>
+                  <tr>
+                    <th>Время</th>
+                    <th>Профиль</th>
+                    <th>Статус</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {testRunsQuery.data?.map((run) => (
+                    <tr key={run.id}>
+                      <td>{formatTimestamp(run.startedAtUtc)}</td>
+                      <td>{run.profileName}</td>
+                      <td>
+                        <span className={getStatusClass(run.status)}>{run.status}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
             </div>
           </>

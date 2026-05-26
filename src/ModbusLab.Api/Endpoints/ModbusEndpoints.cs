@@ -9,7 +9,8 @@ public static class ModbusEndpoints
     {
         var group = app
             .MapGroup("/api/modbus")
-            .WithTags("Modbus");
+            .WithTags("Modbus")
+            .RequireAuthorization();
 
         group.MapPost("/read", async (
             ReadRegisterRequest request,

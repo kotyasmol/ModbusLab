@@ -2,9 +2,11 @@ import * as signalR from "@microsoft/signalr";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5199";
 
-export function createModbusHubConnection() {
+export function createModbusHubConnection(accessToken: string | null) {
   return new signalR.HubConnectionBuilder()
-    .withUrl(`${API_BASE_URL}/hubs/modbus`)
+    .withUrl(`${API_BASE_URL}/hubs/modbus`, {
+      accessTokenFactory: () => accessToken ?? "",
+    })
     .withAutomaticReconnect()
     .build();
 }

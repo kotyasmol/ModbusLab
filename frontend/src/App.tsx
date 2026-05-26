@@ -18,13 +18,17 @@ import {
 } from "./features/testing/testingApi";
 import type { CreateTestStepRequest, TestRunDto } from "./features/testing/types";
 import { DashboardPage } from "./pages/DashboardPage";
+import { LoginPage } from "./pages/LoginPage";
 import { MonitoringPage } from "./pages/MonitoringPage";
+import { RegisterPage } from "./pages/RegisterPage";
 import { TestingPage } from "./pages/TestingPage";
 import { createModbusHubConnection } from "./shared/api/modbusHubConnection";
+import { useAuth } from "./shared/auth/AuthContext";
 import { Shell } from "./shared/components/Shell";
 import "./App.css";
 
 type ActiveSection = "dashboard" | "monitoring" | "testing";
+type AuthSection = "login" | "register";
 
 function formatTimestamp(timestampUtc: string): string {
   return new Date(timestampUtc).toLocaleString("ru-RU", {
@@ -90,7 +94,34 @@ function toNullableNumber(value: string): number | null {
 }
 
 export default function App() {
+  const { user, isLoading } = useAuth();
+  const [authSection, setAuthSection] = useState<AuthSection>("login");
+
+  if (isLoading) {
+    return (
+      <main className="auth-page">
+        <section className="auth-card">
+          <p className="shell-eyebrow">ModbusLab</p>
+          <h1>Загрузка...</h1>
+        </section>
+      </main>
+    );
+  }
+
+  if (!user) {
+    return authSection === "login" ? (
+      <LoginPage onRegisterClick={() => setAuthSection("register")} />
+    ) : (
+      <RegisterPage onLoginClick={() => setAuthSection("login")} />
+    );
+  }
+
+  return <AuthenticatedApp />;
+}
+
+function AuthenticatedApp() {
   const queryClient = useQueryClient();
+  const { accessToken, logout, user } = useAuth();
 
   const [activeSection, setActiveSection] = useState<ActiveSection>("dashboard");
   const [realtimeStatus, setRealtimeStatus] = useState("Connecting");
@@ -143,7 +174,7 @@ export default function App() {
   });
 
   useEffect(() => {
-    const connection = createModbusHubConnection();
+    const connection = createModbusHubConnection(accessToken);
 
     connection.on("RegisterValueChanged", (event: RegisterValueChangedEvent) => {
       queryClient.setQueryData<RegisterDto[]>(
@@ -173,7 +204,7 @@ export default function App() {
     return () => {
       void connection.stop();
     };
-  }, [queryClient]);
+  }, [accessToken, queryClient]);
 
   const readRegisterMutation = useMutation({
     mutationFn: readRegister,
@@ -278,6 +309,8 @@ export default function App() {
       activeSection={activeSection}
       onSectionChange={setActiveSection}
       realtimeStatus={realtimeStatus}
+      user={user}
+      onLogout={logout}
     >
       {activeSection === "dashboard" && (
         <DashboardPage

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { AuthUser } from "../../features/auth/types";
 
 type Section = "dashboard" | "monitoring" | "testing";
 
@@ -6,6 +7,8 @@ type ShellProps = {
   activeSection: Section;
   onSectionChange: (section: Section) => void;
   realtimeStatus: string;
+  user: AuthUser | null;
+  onLogout: () => void;
   children: ReactNode;
 };
 
@@ -15,7 +18,14 @@ const sectionTitles: Record<Section, string> = {
   testing: "Testing",
 };
 
-export function Shell({ activeSection, onSectionChange, realtimeStatus, children }: ShellProps) {
+export function Shell({
+  activeSection,
+  onSectionChange,
+  realtimeStatus,
+  user,
+  onLogout,
+  children,
+}: ShellProps) {
   return (
     <main className="shell-root">
       <aside className="shell-sidebar panel">
@@ -36,7 +46,11 @@ export function Shell({ activeSection, onSectionChange, realtimeStatus, children
         </nav>
         <div className="shell-user panel-soft">
           <span className="muted">User</span>
-          <strong>Admin</strong>
+          <strong>{user?.userName ?? "Unknown"}</strong>
+          <span className="muted">{user?.role ?? "User"}</span>
+          <button className="secondary-button full-width" onClick={onLogout}>
+            Logout
+          </button>
         </div>
       </aside>
       <section className="shell-main">

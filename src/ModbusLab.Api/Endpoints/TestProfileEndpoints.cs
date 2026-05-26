@@ -8,7 +8,8 @@ public static class TestProfileEndpoints
     {
         var group = app
             .MapGroup("/api/test-profiles")
-            .WithTags("Test profiles");
+            .WithTags("Test profiles")
+            .RequireAuthorization();
 
         group.MapGet("/", async (
             TestProfileService testProfileService,
@@ -103,7 +104,8 @@ public static class TestProfileEndpoints
     {
         var group = app
             .MapGroup("/api/test-runs")
-            .WithTags("Test runs");
+            .WithTags("Test runs")
+            .RequireAuthorization();
 
         group.MapGet("/", async (
             TestExecutionService testExecutionService,
