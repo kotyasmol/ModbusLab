@@ -1,6 +1,8 @@
 using ModbusLab.Api.Audit;
 using ModbusLab.Api.Auth;
 using ModbusLab.Application.Testing;
+using System.Globalization;
+using System.Text;
 
 namespace ModbusLab.Api.Endpoints;
 
@@ -209,6 +211,88 @@ public static class TestProfileEndpoints
         .RequireAuthorization(AuthPolicies.RequireViewer)
         .WithSummary("Get test run by id");
 
+        group.MapGet("/{runId:guid}/report.csv", async (
+            Guid runId,
+            TestExecutionService testExecutionService,
+            CancellationToken cancellationToken) =>
+        {
+            var run = await testExecutionService.GetRunAsync(runId, cancellationToken);
+
+            if (run is null)
+                return Results.NotFound();
+
+            var csv = BuildTestRunReportCsv(run);
+            var bytes = Encoding.UTF8.GetPreamble()
+                .Concat(Encoding.UTF8.GetBytes(csv))
+                .ToArray();
+
+            return Results.File(
+                bytes,
+                "text/csv; charset=utf-8",
+                $"modbuslab-test-run-{runId}.csv");
+        })
+        .RequireAuthorization(AuthPolicies.RequireViewer)
+        .WithSummary("Export test run report as CSV");
+
         return app;
+    }
+
+    private static string BuildTestRunReportCsv(TestRunDto run)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("TestRunId,ProfileName,Status,StartedAtUtc,FinishedAtUtc,Summary,StepOrder,StepName,StepType,StepStatus,ExpectedValue,ActualValue,Message");
+
+        if (run.Steps.Count == 0)
+        {
+            AppendCsvRow(builder, run, null);
+            return builder.ToString();
+        }
+
+        foreach (var step in run.Steps)
+        {
+            AppendCsvRow(builder, run, step);
+        }
+
+        return builder.ToString();
+    }
+
+    private static void AppendCsvRow(
+        StringBuilder builder,
+        TestRunDto run,
+        TestStepResultDto? step)
+    {
+        var values = new[]
+        {
+            run.Id.ToString(),
+            run.ProfileName,
+            run.Status,
+            FormatDate(run.StartedAtUtc),
+            FormatDate(run.FinishedAtUtc),
+            run.Summary,
+            step?.OrderIndex.ToString(CultureInfo.InvariantCulture),
+            step?.StepName,
+            step?.StepType,
+            step?.Status,
+            step?.ExpectedValue?.ToString(CultureInfo.InvariantCulture),
+            step?.ActualValue?.ToString(CultureInfo.InvariantCulture),
+            step?.Message
+        };
+
+        builder.AppendLine(string.Join(",", values.Select(EscapeCsv)));
+    }
+
+    private static string FormatDate(DateTime? value)
+    {
+        return value?.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture) ?? string.Empty;
+    }
+
+    private static string EscapeCsv(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return string.Empty;
+
+        return value.Contains('"') || value.Contains(',') || value.Contains('\n') || value.Contains('\r')
+            ? $"\"{value.Replace("\"", "\"\"")}\""
+            : value;
     }
 }

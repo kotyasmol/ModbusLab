@@ -25,6 +25,9 @@ ModbusLab is a fullstack pet project for monitoring and testing Modbus-like indu
 - Modbus operation journal
 - Test profiles with configurable steps
 - Test run execution and history
+- CSV export for test run reports
+- Health/status endpoints for API and database checks
+- Minimal backend test suite
 - Realtime register updates via SignalR
 - Swagger with JWT Authorize support
 - Full Docker Compose setup for PostgreSQL, API, and frontend
@@ -70,6 +73,12 @@ Default local URLs:
 
 - API/Swagger: `http://localhost:5199/swagger`
 - Frontend: `http://localhost:5173`
+
+Useful API endpoints:
+
+- `GET /api/health`
+- `GET /api/health/db`
+- `GET /api/test-runs/{runId}/report.csv`
 
 ## Full Docker Run
 

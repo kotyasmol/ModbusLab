@@ -5,4 +5,7 @@
     <Project Path="src/ModbusLab.Domain/ModbusLab.Domain.csproj" />
     <Project Path="src/ModbusLab.Infrastructure/ModbusLab.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ModbusLab.Tests/ModbusLab.Tests.csproj" />
+  </Folder>
 </Solution>

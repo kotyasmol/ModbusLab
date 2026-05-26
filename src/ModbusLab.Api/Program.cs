@@ -128,6 +128,7 @@ app.UseAuthorization();
 
 app.MapGet("/", () => Results.Redirect("/swagger"));
 
+app.MapHealthEndpoints();
 app.MapAuthEndpoints();
 app.MapAuditLogEndpoints();
 app.MapDeviceEndpoints();
