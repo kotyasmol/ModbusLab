@@ -21,6 +21,8 @@ type MonitoringPageProps = {
   readRegisterPending: boolean;
   writeRegisterPending: boolean;
   renderLogRows: (logs: ModbusLogDto[]) => ReactNode;
+  canWriteRegister: boolean;
+  unavailableReason: string;
 };
 
 export function MonitoringPage({
@@ -41,6 +43,8 @@ export function MonitoringPage({
   readRegisterPending,
   writeRegisterPending,
   renderLogRows,
+  canWriteRegister,
+  unavailableReason,
 }: MonitoringPageProps) {
   return (
     <>
@@ -96,11 +100,13 @@ export function MonitoringPage({
 
                 <div className="operation-box">
                   <h4>Запись регистра</h4>
+                  {!canWriteRegister && <p className="muted">{unavailableReason}</p>}
                   <label>
                     Адрес
                     <input
                       value={writeRegisterAddress}
                       onChange={(event) => setWriteRegisterAddress(event.target.value)}
+                      disabled={!canWriteRegister}
                     />
                   </label>
                   <label>
@@ -108,12 +114,13 @@ export function MonitoringPage({
                     <input
                       value={writeRegisterValue}
                       onChange={(event) => setWriteRegisterValue(event.target.value)}
+                      disabled={!canWriteRegister}
                     />
                   </label>
                   <button
                     className="primary-button"
                     onClick={handleWriteRegister}
-                    disabled={writeRegisterPending}
+                    disabled={writeRegisterPending || !canWriteRegister}
                   >
                     {writeRegisterPending ? "Запись..." : "Записать"}
                   </button>

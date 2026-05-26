@@ -36,6 +36,9 @@ type TestingPageProps = {
   testRunsQuery: UseQueryResult<TestRunDto[], Error>;
   getStatusClass: (status: number | string) => string;
   formatTimestamp: (value: string) => string;
+  canManageProfiles: boolean;
+  canRunTests: boolean;
+  unavailableReason: string;
 };
 
 export function TestingPage(props: TestingPageProps) {
@@ -74,6 +77,9 @@ export function TestingPage(props: TestingPageProps) {
     testRunsQuery,
     getStatusClass,
     formatTimestamp,
+    canManageProfiles,
+    canRunTests,
+    unavailableReason,
   } = props;
 
   return (
@@ -84,15 +90,28 @@ export function TestingPage(props: TestingPageProps) {
         </div>
 
         <div className="create-card">
+          {!canManageProfiles && <p className="muted">{unavailableReason}</p>}
           <label>
             Название
-            <input value={newProfileName} onChange={(event) => setNewProfileName(event.target.value)} />
+            <input
+              value={newProfileName}
+              onChange={(event) => setNewProfileName(event.target.value)}
+              disabled={!canManageProfiles}
+            />
           </label>
           <label>
             Описание
-            <textarea value={newProfileDescription} onChange={(event) => setNewProfileDescription(event.target.value)} />
+            <textarea
+              value={newProfileDescription}
+              onChange={(event) => setNewProfileDescription(event.target.value)}
+              disabled={!canManageProfiles}
+            />
           </label>
-          <button className="primary-button full-width" onClick={handleCreateProfile} disabled={creatingProfile}>
+          <button
+            className="primary-button full-width"
+            onClick={handleCreateProfile}
+            disabled={creatingProfile || !canManageProfiles}
+          >
             {creatingProfile ? "Создание..." : "Создать профиль"}
           </button>
         </div>
@@ -118,35 +137,90 @@ export function TestingPage(props: TestingPageProps) {
           <>
             <div className="panel-header">
               <h2>{selectedProfile.name}</h2>
-              <button className="primary-button" onClick={() => runProfile(selectedProfile.id)} disabled={runPending}>
-                {runPending ? "Выполнение..." : "Запустить тест"}
-              </button>
+              <div>
+                {!canRunTests && <p className="muted">{unavailableReason}</p>}
+                <button
+                  className="primary-button"
+                  onClick={() => runProfile(selectedProfile.id)}
+                  disabled={runPending || !canRunTests}
+                >
+                  {runPending ? "Выполнение..." : "Запустить тест"}
+                </button>
+              </div>
             </div>
 
             <section className="operation-panel">
               <h3>Добавить шаг</h3>
+              {!canManageProfiles && <p className="muted">{unavailableReason}</p>}
               <div className="step-form">
-                <select value={stepType} onChange={(event) => setStepType(event.target.value)}>
+                <select
+                  value={stepType}
+                  onChange={(event) => setStepType(event.target.value)}
+                  disabled={!canManageProfiles}
+                >
                   <option value="WriteRegister">Записать регистр</option>
                   <option value="Delay">Пауза</option>
                   <option value="CheckRegisterRange">Проверить диапазон регистра</option>
                 </select>
-                <input value={stepName} onChange={(event) => setStepName(event.target.value)} placeholder="Название шага" />
+                <input
+                  value={stepName}
+                  onChange={(event) => setStepName(event.target.value)}
+                  placeholder="Название шага"
+                  disabled={!canManageProfiles}
+                />
                 {stepType !== "Delay" && (
                   <>
-                    <input value={stepSlaveAddress} onChange={(event) => setStepSlaveAddress(event.target.value)} placeholder="Slave" />
-                    <input value={stepRegisterAddress} onChange={(event) => setStepRegisterAddress(event.target.value)} placeholder="Регистр" />
+                    <input
+                      value={stepSlaveAddress}
+                      onChange={(event) => setStepSlaveAddress(event.target.value)}
+                      placeholder="Slave"
+                      disabled={!canManageProfiles}
+                    />
+                    <input
+                      value={stepRegisterAddress}
+                      onChange={(event) => setStepRegisterAddress(event.target.value)}
+                      placeholder="Регистр"
+                      disabled={!canManageProfiles}
+                    />
                   </>
                 )}
-                {stepType === "WriteRegister" && <input value={stepValue} onChange={(event) => setStepValue(event.target.value)} placeholder="Значение" />}
+                {stepType === "WriteRegister" && (
+                  <input
+                    value={stepValue}
+                    onChange={(event) => setStepValue(event.target.value)}
+                    placeholder="Значение"
+                    disabled={!canManageProfiles}
+                  />
+                )}
                 {stepType === "CheckRegisterRange" && (
                   <>
-                    <input value={stepMinValue} onChange={(event) => setStepMinValue(event.target.value)} placeholder="Min" />
-                    <input value={stepMaxValue} onChange={(event) => setStepMaxValue(event.target.value)} placeholder="Max" />
+                    <input
+                      value={stepMinValue}
+                      onChange={(event) => setStepMinValue(event.target.value)}
+                      placeholder="Min"
+                      disabled={!canManageProfiles}
+                    />
+                    <input
+                      value={stepMaxValue}
+                      onChange={(event) => setStepMaxValue(event.target.value)}
+                      placeholder="Max"
+                      disabled={!canManageProfiles}
+                    />
                   </>
                 )}
-                {stepType === "Delay" && <input value={stepDelayMs} onChange={(event) => setStepDelayMs(event.target.value)} placeholder="Задержка, мс" />}
-                <button className="secondary-button" onClick={handleAddStep} disabled={addingStep}>
+                {stepType === "Delay" && (
+                  <input
+                    value={stepDelayMs}
+                    onChange={(event) => setStepDelayMs(event.target.value)}
+                    placeholder="Задержка, мс"
+                    disabled={!canManageProfiles}
+                  />
+                )}
+                <button
+                  className="secondary-button"
+                  onClick={handleAddStep}
+                  disabled={addingStep || !canManageProfiles}
+                >
                   {addingStep ? "Добавление..." : "Добавить шаг"}
                 </button>
               </div>

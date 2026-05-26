@@ -24,6 +24,8 @@ public sealed class ModbusLabDbContext : DbContext
 
     public DbSet<ModbusLogEntry> ModbusLogs => Set<ModbusLogEntry>();
 
+    public DbSet<AuditLogEntry> AuditLogs => Set<AuditLogEntry>();
+
     public DbSet<TestProfile> TestProfiles => Set<TestProfile>();
 
     public DbSet<TestStep> TestSteps => Set<TestStep>();
@@ -157,6 +159,45 @@ public sealed class ModbusLabDbContext : DbContext
 
             entity.HasIndex(log => log.TimestampUtc);
             entity.HasIndex(log => log.SlaveAddress);
+        });
+
+        modelBuilder.Entity<AuditLogEntry>(entity =>
+        {
+            entity.ToTable("audit_logs");
+
+            entity.HasKey(log => log.Id);
+
+            entity.Property(log => log.TimestampUtc)
+                .IsRequired();
+
+            entity.Property(log => log.UserName)
+                .HasMaxLength(64);
+
+            entity.Property(log => log.UserRole)
+                .HasMaxLength(32);
+
+            entity.Property(log => log.Action)
+                .HasMaxLength(128)
+                .IsRequired();
+
+            entity.Property(log => log.EntityType)
+                .HasMaxLength(64);
+
+            entity.Property(log => log.EntityId)
+                .HasMaxLength(128);
+
+            entity.Property(log => log.Details)
+                .HasMaxLength(1024);
+
+            entity.Property(log => log.IpAddress)
+                .HasMaxLength(64);
+
+            entity.Property(log => log.IsSuccess)
+                .IsRequired();
+
+            entity.HasIndex(log => log.TimestampUtc);
+            entity.HasIndex(log => log.UserName);
+            entity.HasIndex(log => log.Action);
         });
 
         modelBuilder.Entity<TestProfile>(entity =>

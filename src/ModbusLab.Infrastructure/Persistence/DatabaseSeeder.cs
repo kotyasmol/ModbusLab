@@ -30,10 +30,7 @@ public static class DatabaseSeeder
             await SeedTestProfilesAsync(dbContext);
         }
 
-        if (!await dbContext.AppUsers.AnyAsync())
-        {
-            await SeedUsersAsync(dbContext);
-        }
+        await SeedUsersAsync(dbContext);
     }
 
     private static async Task SeedDevicesAsync(ModbusLabDbContext dbContext)
@@ -169,17 +166,50 @@ public static class DatabaseSeeder
 
     private static async Task SeedUsersAsync(ModbusLabDbContext dbContext)
     {
-        var user = new AppUser(
+        await EnsureDemoUserAsync(
+            dbContext,
             userName: "admin",
             email: "admin@modbuslab.local",
-            passwordHash: "__pending__",
+            password: "Admin123!",
             role: "Admin");
 
+        await EnsureDemoUserAsync(
+            dbContext,
+            userName: "engineer",
+            email: "engineer@modbuslab.local",
+            password: "Engineer123!",
+            role: "Engineer");
+
+        await EnsureDemoUserAsync(
+            dbContext,
+            userName: "viewer",
+            email: "viewer@modbuslab.local",
+            password: "Viewer123!",
+            role: "Viewer");
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task EnsureDemoUserAsync(
+        ModbusLabDbContext dbContext,
+        string userName,
+        string email,
+        string password,
+        string role)
+    {
+        if (await dbContext.AppUsers.AnyAsync(user => user.UserName == userName))
+            return;
+
+        var user = new AppUser(
+            userName,
+            email,
+            passwordHash: "__pending__",
+            role);
+
         var passwordHasher = new PasswordHasher<AppUser>();
-        user.SetPasswordHash(passwordHasher.HashPassword(user, "Admin123!"));
+        user.SetPasswordHash(passwordHasher.HashPassword(user, password));
 
         await dbContext.AppUsers.AddAsync(user);
-        await dbContext.SaveChangesAsync();
     }
 
     private static async Task BaselineLegacyEnsureCreatedDatabaseAsync(ModbusLabDbContext dbContext)
@@ -197,16 +227,27 @@ public static class DatabaseSeeder
             );
             """);
 
-        var hasMigrationRows = await MigrationHistoryHasRowsAsync(dbContext);
+        await AddBaselineMigrationAsync(dbContext, "20260430061940_InitialCreate");
+        await AddBaselineMigrationAsync(dbContext, "20260525110010_AddTestingModule");
 
-        if (hasMigrationRows)
-            return;
+        if (await TableExistsAsync(dbContext, "app_users"))
+        {
+            await AddBaselineMigrationAsync(dbContext, "20260526094216_AddAppUsers");
+        }
 
-        await dbContext.Database.ExecuteSqlRawAsync("""
+        if (await TableExistsAsync(dbContext, "audit_logs"))
+        {
+            await AddBaselineMigrationAsync(dbContext, "20260526103619_AddAuditLogs");
+        }
+    }
+
+    private static async Task AddBaselineMigrationAsync(
+        ModbusLabDbContext dbContext,
+        string migrationId)
+    {
+        await dbContext.Database.ExecuteSqlInterpolatedAsync($"""
             INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-            VALUES
-                ('20260430061940_InitialCreate', '10.0.7'),
-                ('20260525110010_AddTestingModule', '10.0.7')
+            VALUES ({migrationId}, '10.0.7')
             ON CONFLICT ("MigrationId") DO NOTHING;
             """);
     }
@@ -226,20 +267,6 @@ public static class DatabaseSeeder
             );
             """,
             tableName);
-
-        return result is true;
-    }
-
-    private static async Task<bool> MigrationHistoryHasRowsAsync(ModbusLabDbContext dbContext)
-    {
-        var result = await ExecuteScalarAsync(
-            dbContext,
-            """
-            SELECT EXISTS (
-                SELECT 1
-                FROM "__EFMigrationsHistory"
-            );
-            """);
 
         return result is true;
     }

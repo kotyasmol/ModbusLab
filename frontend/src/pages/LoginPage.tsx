@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from "react";
-import { useAuth } from "../shared/auth/AuthContext";
+import { useAuth } from "../shared/auth/useAuth";
 
 type LoginPageProps = {
   onRegisterClick: () => void;
@@ -32,7 +32,7 @@ export function LoginPage({ onRegisterClick }: LoginPageProps) {
         <div>
           <p className="shell-eyebrow">ModbusLab</p>
           <h1>Вход в панель</h1>
-          <p className="muted">Демо-аккаунт: admin / Admin123!</p>
+          <p className="muted">Demo: admin / Admin123!, engineer / Engineer123!, viewer / Viewer123!</p>
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>

@@ -15,7 +15,7 @@ type Props = {
 };
 
 export function DashboardPage({ devicesQuery, logsQuery, testProfilesQuery, testRunsQuery, formatTimestamp, getStatusClass }: Props) {
-  const runs = testRunsQuery.data ?? [];
+  const runs = useMemo(() => testRunsQuery.data ?? [], [testRunsQuery.data]);
   const passRate = runs.length ? Math.round((runs.filter((r) => r.status === "Passed").length / runs.length) * 100) : 0;
   const avgDuration = useMemo(() => {
     const durations = runs.map((r) => r.finishedAtUtc ? new Date(r.finishedAtUtc).getTime() - new Date(r.startedAtUtc).getTime() : 0).filter((d) => d > 0);

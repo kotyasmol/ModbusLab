@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from "react";
-import { useAuth } from "../shared/auth/AuthContext";
+import { useAuth } from "../shared/auth/useAuth";
 
 type RegisterPageProps = {
   onLoginClick: () => void;
@@ -48,7 +48,7 @@ export function RegisterPage({ onLoginClick }: RegisterPageProps) {
         <div>
           <p className="shell-eyebrow">ModbusLab</p>
           <h1>Регистрация</h1>
-          <p className="muted">После регистрации вход выполнится автоматически.</p>
+          <p className="muted">Новые пользователи получают роль Viewer.</p>
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>

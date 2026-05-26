@@ -1,6 +1,8 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.OpenApi;
 using Microsoft.IdentityModel.Tokens;
+using ModbusLab.Api.Audit;
 using ModbusLab.Api.Auth;
 using ModbusLab.Api.BackgroundServices;
 using ModbusLab.Api.Endpoints;
@@ -14,7 +16,26 @@ using ModbusLab.Infrastructure.Persistence;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme.",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecuritySchemeReference("Bearer", document, null),
+            new List<string>()
+        }
+    });
+});
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<RandomRegisterSimulationWorker>();
 
@@ -77,8 +98,18 @@ builder.Services
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AuthPolicies.RequireViewer, policy =>
+        policy.RequireRole(AuthRoles.Viewer, AuthRoles.Engineer, AuthRoles.Admin));
+    options.AddPolicy(AuthPolicies.RequireEngineer, policy =>
+        policy.RequireRole(AuthRoles.Engineer, AuthRoles.Admin));
+    options.AddPolicy(AuthPolicies.RequireAdmin, policy =>
+        policy.RequireRole(AuthRoles.Admin));
+});
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<AuditLogService>();
 builder.Services.AddScoped<DeviceQueryService>();
 builder.Services.AddScoped<ModbusRegisterService>();
 builder.Services.AddScoped<TestProfileService>();
@@ -98,6 +129,7 @@ app.UseAuthorization();
 app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.MapAuthEndpoints();
+app.MapAuditLogEndpoints();
 app.MapDeviceEndpoints();
 app.MapModbusEndpoints();
 app.MapTestProfileEndpoints();

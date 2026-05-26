@@ -1,8 +1,6 @@
 import {
-  createContext,
   type ReactNode,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -16,17 +14,7 @@ import {
   setAccessToken,
   setUnauthorizedHandler,
 } from "../api/apiClient";
-
-type AuthContextValue = {
-  user: AuthUser | null;
-  accessToken: string | null;
-  isLoading: boolean;
-  login: (request: LoginRequest) => Promise<void>;
-  register: (request: RegisterRequest) => Promise<void>;
-  logout: () => void;
-};
-
-const AuthContext = createContext<AuthContextValue | null>(null);
+import { AuthContext } from "./authContextValue";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
@@ -95,14 +83,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth() {
-  const value = useContext(AuthContext);
-
-  if (value === null) {
-    throw new Error("useAuth must be used inside AuthProvider.");
-  }
-
-  return value;
 }

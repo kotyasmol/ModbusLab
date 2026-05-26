@@ -46,7 +46,7 @@ public sealed class AuthService
             throw new InvalidOperationException("Email is already taken.");
         }
 
-        var user = new AppUser(userName, email, passwordHash: "__pending__", role: "User");
+        var user = new AppUser(userName, email, passwordHash: "__pending__", role: AuthRoles.Viewer);
         user.SetPasswordHash(_passwordHasher.HashPassword(user, request.Password));
 
         await _dbContext.AppUsers.AddAsync(user, cancellationToken);

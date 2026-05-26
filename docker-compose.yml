@@ -10,6 +10,43 @@ services:
       - "5433:5432"
     volumes:
       - modbuslab-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U modbuslab -d modbuslab"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: src/ModbusLab.Api/Dockerfile
+    container_name: modbuslab-api
+    profiles: ["full"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=modbuslab;Username=modbuslab;Password=modbuslab_password
+      Jwt__Issuer: ModbusLab.Dev
+      Jwt__Audience: ModbusLab.Frontend
+      Jwt__Secret: modbuslab-dev-demo-secret-change-before-production-2026
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8080
+    container_name: modbuslab-frontend
+    profiles: ["full"]
+    depends_on:
+      - api
+    ports:
+      - "5173:80"
 
 volumes:
   modbuslab-postgres-data:

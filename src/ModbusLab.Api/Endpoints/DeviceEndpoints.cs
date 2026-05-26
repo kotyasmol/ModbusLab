@@ -1,4 +1,5 @@
 using ModbusLab.Application.Devices;
+using ModbusLab.Api.Auth;
 
 namespace ModbusLab.Api.Endpoints;
 
@@ -8,8 +9,7 @@ public static class DeviceEndpoints
     {
         var group = app
             .MapGroup("/api/devices")
-            .WithTags("Devices")
-            .RequireAuthorization();
+            .WithTags("Devices");
 
         group.MapGet("/", async (
             DeviceQueryService deviceQueryService,
@@ -19,6 +19,7 @@ public static class DeviceEndpoints
 
             return Results.Ok(devices);
         })
+        .RequireAuthorization(AuthPolicies.RequireViewer)
         .WithSummary("Get all Modbus slave devices");
 
         group.MapGet("/{deviceId:guid}/registers", async (
@@ -32,6 +33,7 @@ public static class DeviceEndpoints
 
             return Results.Ok(registers);
         })
+        .RequireAuthorization(AuthPolicies.RequireViewer)
         .WithSummary("Get registers for selected device");
 
         return app;

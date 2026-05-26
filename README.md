@@ -1,8 +1,6 @@
-
-
 # ModbusLab
 
-ModbusLab is a fullstack pet project for monitoring and testing Modbus-like industrial devices. The project demonstrates a small production-style stack: protected API endpoints, PostgreSQL persistence, a React dashboard, realtime updates, and basic automated test profiles for device registers.
+ModbusLab is a fullstack pet project for monitoring and testing Modbus-like industrial devices. It shows a compact production-style stack: protected API endpoints, role-based access control, PostgreSQL persistence, audit logs, realtime updates, and a React operator dashboard.
 
 ## Stack
 
@@ -15,26 +13,44 @@ ModbusLab is a fullstack pet project for monitoring and testing Modbus-like indu
 - TanStack Query
 - SignalR
 - Docker Compose
+- GitHub Actions
 
 ## Features
 
+- JWT authentication with local users
+- RBAC roles: Viewer, Engineer, Admin
+- User audit log for auth, register writes, and test actions
 - Device monitoring dashboard
 - Register read/write operations
 - Modbus operation journal
 - Test profiles with configurable steps
 - Test run execution and history
 - Realtime register updates via SignalR
-- JWT authentication with local users
+- Swagger with JWT Authorize support
+- Full Docker Compose setup for PostgreSQL, API, and frontend
+- CI workflow for backend and frontend builds
 
-## Run Locally
+## Demo Accounts
 
-Start PostgreSQL:
+For local development only:
+
+| Login | Password | Role |
+| --- | --- | --- |
+| `admin` | `Admin123!` | `Admin` |
+| `engineer` | `Engineer123!` | `Engineer` |
+| `viewer` | `Viewer123!` | `Viewer` |
+
+Do not use these accounts or the development JWT secret in production.
+
+## Local Development
+
+Start PostgreSQL only:
 
 ```powershell
-docker compose up -d
+docker compose up -d postgres
 ```
 
-Restore and run the API:
+Restore, migrate, and run the API:
 
 ```powershell
 dotnet restore
@@ -50,37 +66,41 @@ npm install
 npm run dev
 ```
 
-Default URLs:
+Default local URLs:
 
 - API/Swagger: `http://localhost:5199/swagger`
 - Frontend: `http://localhost:5173`
 
-## Demo Account
+## Full Docker Run
 
-For local development only:
+Build and run PostgreSQL, API, and frontend:
 
-- Login: `admin`
-- Password: `Admin123!`
-- Role: `Admin`
+```powershell
+docker compose --profile full up --build
+```
 
-Do not use this account or the development JWT secret in production.
+Docker URLs:
+
+- API/Swagger: `http://localhost:8080/swagger`
+- Frontend: `http://localhost:5173`
 
 ## Quality Checks
 
 ```powershell
 dotnet restore
 dotnet build
+dotnet test
 npm install --prefix frontend
 npm run build --prefix frontend
 npm run lint --prefix frontend
+docker compose config
 ```
 
-There are currently no dedicated test projects in the repository.
+GitHub Actions runs the same backend and frontend build checks on push and pull requests to `main`.
 
 ## Roadmap
 
-- User roles and permissions
-- Audit log for register writes and test runs
-- Advanced visual test designer
 - Exportable reports
-- CI/CD pipeline
+- Visual test designer
+- Observability and health checks
+- Advanced device management
