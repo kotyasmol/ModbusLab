@@ -9,6 +9,7 @@ using ModbusLab.Api.BackgroundServices;
 using ModbusLab.Api.Devices;
 using ModbusLab.Api.Endpoints;
 using ModbusLab.Api.Realtime;
+using ModbusLab.Api.Testing;
 using ModbusLab.Application.Devices;
 using ModbusLab.Application.Modbus;
 using ModbusLab.Application.Testing;
@@ -40,6 +41,8 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<RandomRegisterSimulationWorker>();
+builder.Services.AddSingleton<TestRunQueue>();
+builder.Services.AddHostedService<TestRunWorker>();
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;

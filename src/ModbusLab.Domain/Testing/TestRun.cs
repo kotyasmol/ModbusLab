@@ -32,8 +32,14 @@ public sealed class TestRun
         Id = Guid.NewGuid();
         TestProfileId = testProfileId;
         ProfileName = profileName.Trim();
-        Status = TestRunStatus.Running;
+        Status = TestRunStatus.Queued;
         StartedAtUtc = DateTime.UtcNow;
+    }
+
+    public void MarkRunning()
+    {
+        Status = TestRunStatus.Running;
+        Summary = "Test run is executing.";
     }
 
     public void CompleteAsPassed(string summary)

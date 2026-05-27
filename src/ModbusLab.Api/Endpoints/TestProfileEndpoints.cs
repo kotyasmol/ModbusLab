@@ -1,5 +1,6 @@
 using ModbusLab.Api.Audit;
 using ModbusLab.Api.Auth;
+using ModbusLab.Api.Testing;
 using ModbusLab.Application.Testing;
 using System.Globalization;
 using System.Text;
@@ -131,12 +132,13 @@ public static class TestProfileEndpoints
         group.MapPost("/{profileId:guid}/run", async (
             Guid profileId,
             TestExecutionService testExecutionService,
+            TestRunQueue testRunQueue,
             AuditLogService auditLogService,
             CancellationToken cancellationToken) =>
         {
             try
             {
-                var run = await testExecutionService.RunProfileAsync(profileId, cancellationToken);
+                var run = await testExecutionService.QueueProfileRunAsync(profileId, cancellationToken);
 
                 if (run is null)
                 {
@@ -151,12 +153,14 @@ public static class TestProfileEndpoints
                     return Results.NotFound();
                 }
 
+                await testRunQueue.EnqueueAsync(run.Id, cancellationToken);
+
                 await auditLogService.LogAsync(
                     "testing.run_profile",
                     isSuccess: true,
                     entityType: "TestRun",
                     entityId: run.Id.ToString(),
-                    details: $"Started profile '{run.ProfileName}'.",
+                    details: $"Queued profile '{run.ProfileName}'.",
                     cancellationToken: cancellationToken);
 
                 return Results.Ok(run);

@@ -1,5 +1,5 @@
 import type { UseQueryResult } from "@tanstack/react-query";
-import type { TestProfileDto, TestRunDto } from "../features/testing/types";
+import type { TestProfileDto, TestRunDto, TestRunProgressEvent } from "../features/testing/types";
 
 type TestingPageProps = {
   testProfilesQuery: UseQueryResult<TestProfileDto[], Error>;
@@ -33,6 +33,7 @@ type TestingPageProps = {
   runProfile: (id: string) => void;
   runPending: boolean;
   lastRun: TestRunDto | null;
+  latestProgress: TestRunProgressEvent | null;
   testRunsQuery: UseQueryResult<TestRunDto[], Error>;
   getStatusClass: (status: number | string) => string;
   formatTimestamp: (value: string) => string;
@@ -74,6 +75,7 @@ export function TestingPage(props: TestingPageProps) {
     runProfile,
     runPending,
     lastRun,
+    latestProgress,
     testRunsQuery,
     getStatusClass,
     formatTimestamp,
@@ -150,6 +152,25 @@ export function TestingPage(props: TestingPageProps) {
             </div>
 
             <section className="operation-panel">
+              {latestProgress && latestProgress.testProfileId === selectedProfile.id && (
+                <div className="progress-panel">
+                  <div className="panel-header">
+                    <h3>Live progress</h3>
+                    <span className={getStatusClass(latestProgress.status)}>
+                      {latestProgress.status}
+                    </span>
+                  </div>
+                  <p className="muted">{latestProgress.message}</p>
+                  <progress
+                    value={latestProgress.completedSteps}
+                    max={latestProgress.totalSteps || 1}
+                  />
+                  <p className="muted">
+                    {latestProgress.completedSteps} / {latestProgress.totalSteps || "?"} steps
+                  </p>
+                </div>
+              )}
+
               <h3>Добавить шаг</h3>
               {!canManageProfiles && <p className="muted">{unavailableReason}</p>}
               <div className="step-form">

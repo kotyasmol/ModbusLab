@@ -59,3 +59,14 @@ export type TestRunDto = {
   summary: string | null;
   steps: TestStepResultDto[];
 };
+
+export type TestRunProgressEvent = {
+  testRunId: string;
+  testProfileId: string;
+  profileName: string;
+  status: string;
+  completedSteps: number;
+  totalSteps: number;
+  message: string;
+  timestampUtc: string;
+};

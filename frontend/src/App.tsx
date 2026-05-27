@@ -4,6 +4,7 @@ import { useMonitoring } from "./features/devices/useMonitoring";
 import type { RegisterValueChangedEvent } from "./features/devices/modbusTypes";
 import type { RegisterDto } from "./features/devices/types";
 import { useTesting } from "./features/testing/useTesting";
+import type { TestRunProgressEvent } from "./features/testing/types";
 import { AuditLogsPage } from "./pages/AuditLogsPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DeviceManagementPage } from "./pages/DeviceManagementPage";
@@ -89,6 +90,7 @@ function AuthenticatedApp() {
 
   const monitoring = useMonitoring({ formatTimestamp, getStatusClass });
   const testing = useTesting();
+  const setLatestTestRunProgress = testing.setLatestProgress;
 
   const handleSectionChange = (section: ActiveSection) => {
     if (
@@ -122,6 +124,11 @@ function AuthenticatedApp() {
       );
     });
 
+    connection.on("TestRunProgress", (event: TestRunProgressEvent) => {
+      setLatestTestRunProgress(event);
+      void queryClient.invalidateQueries({ queryKey: ["test-runs"] });
+    });
+
     connection.onreconnecting(() => setRealtimeStatus("Reconnecting"));
     connection.onreconnected(() => setRealtimeStatus("Connected"));
     connection.onclose(() => setRealtimeStatus("Disconnected"));
@@ -134,7 +141,7 @@ function AuthenticatedApp() {
     return () => {
       void connection.stop();
     };
-  }, [accessToken, queryClient]);
+  }, [accessToken, queryClient, setLatestTestRunProgress]);
 
   return (
     <Shell

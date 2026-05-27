@@ -8,7 +8,7 @@ import {
   getTestRuns,
   runTestProfile,
 } from "./testingApi";
-import type { CreateTestStepRequest, TestRunDto } from "./types";
+import type { CreateTestStepRequest, TestRunDto, TestRunProgressEvent } from "./types";
 
 function toNullableNumber(value: string): number | null {
   if (value.trim().length === 0) return null;
@@ -30,6 +30,7 @@ export function useTesting() {
   const [stepMaxValue, setStepMaxValue] = useState("12300");
   const [stepDelayMs, setStepDelayMs] = useState("1000");
   const [lastRun, setLastRun] = useState<TestRunDto | null>(null);
+  const [latestProgress, setLatestProgress] = useState<TestRunProgressEvent | null>(null);
 
   const testProfilesQuery = useQuery({
     queryKey: ["test-profiles"],
@@ -43,7 +44,9 @@ export function useTesting() {
   const testRunsQuery = useQuery({
     queryKey: ["test-runs"],
     queryFn: getTestRuns,
-    refetchInterval: 7000,
+    refetchInterval: latestProgress?.status === "Running" || latestProgress?.status === "Queued"
+      ? 1500
+      : 7000,
   });
 
   const createProfileMutation = useMutation({
@@ -68,6 +71,16 @@ export function useTesting() {
     mutationFn: runTestProfile,
     onSuccess: async (run) => {
       setLastRun(run);
+      setLatestProgress({
+        testRunId: run.id,
+        testProfileId: run.testProfileId,
+        profileName: run.profileName,
+        status: run.status,
+        completedSteps: run.steps.length,
+        totalSteps: 0,
+        message: run.summary ?? "Test run queued.",
+        timestampUtc: run.startedAtUtc,
+      });
       await queryClient.invalidateQueries({ queryKey: ["test-runs"] });
     },
   });
@@ -126,6 +139,8 @@ export function useTesting() {
     runProfile: (id: string) => runProfileMutation.mutate(id),
     runPending: runProfileMutation.isPending,
     lastRun,
+    latestProgress,
+    setLatestProgress,
     testRunsQuery,
   };
 }

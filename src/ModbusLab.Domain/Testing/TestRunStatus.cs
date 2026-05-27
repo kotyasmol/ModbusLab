@@ -4,5 +4,6 @@ public enum TestRunStatus
 {
     Running = 0,
     Passed = 1,
-    Failed = 2
+    Failed = 2,
+    Queued = 3
 }

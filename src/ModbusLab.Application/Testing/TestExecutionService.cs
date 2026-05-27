@@ -53,6 +53,21 @@ public sealed class TestExecutionService
         Guid testProfileId,
         CancellationToken cancellationToken = default)
     {
+        var queuedRun = await QueueProfileRunAsync(testProfileId, cancellationToken);
+
+        if (queuedRun is null)
+            return null;
+
+        return await ExecuteQueuedRunAsync(
+            queuedRun.Id,
+            publishProgressAsync: null,
+            cancellationToken);
+    }
+
+    public async Task<TestRunDto?> QueueProfileRunAsync(
+        Guid testProfileId,
+        CancellationToken cancellationToken = default)
+    {
         var profile = await _testProfileRepository.GetByIdAsync(testProfileId, cancellationToken);
 
         if (profile is null)
@@ -71,26 +86,82 @@ public sealed class TestExecutionService
         await _testRunRepository.AddAsync(testRun, cancellationToken);
         await _testRunRepository.SaveChangesAsync(cancellationToken);
 
+        return ToDto(testRun, Array.Empty<TestStepResult>());
+    }
+
+    public async Task<TestRunDto?> ExecuteQueuedRunAsync(
+        Guid testRunId,
+        Func<TestRunProgressEvent, CancellationToken, Task>? publishProgressAsync = null,
+        CancellationToken cancellationToken = default)
+    {
+        var testRun = await _testRunRepository.GetByIdAsync(testRunId, cancellationToken);
+
+        if (testRun is null)
+            return null;
+
+        var steps = await _testProfileRepository.GetStepsAsync(testRun.TestProfileId, cancellationToken);
+
+        if (steps.Count == 0)
+            throw new InvalidOperationException("Test profile has no steps.");
+
+        testRun.MarkRunning();
+        await _testRunRepository.SaveChangesAsync(cancellationToken);
+
+        await PublishProgressAsync(
+            publishProgressAsync,
+            testRun,
+            completedSteps: 0,
+            totalSteps: steps.Count,
+            "Test run started.",
+            cancellationToken);
+
+        var completedSteps = 0;
+
         foreach (var step in steps.OrderBy(step => step.OrderIndex))
         {
             var result = await ExecuteStepAsync(testRun.Id, step, cancellationToken);
 
             await _testRunRepository.AddStepResultAsync(result, cancellationToken);
+            completedSteps++;
+
+            await _testRunRepository.SaveChangesAsync(cancellationToken);
+
+            await PublishProgressAsync(
+                publishProgressAsync,
+                testRun,
+                completedSteps,
+                steps.Count,
+                $"Step {step.OrderIndex} {result.Status}: {step.Name}",
+                cancellationToken);
 
             if (result.Status == TestStepResultStatus.Failed)
             {
                 testRun.CompleteAsFailed($"Step {step.OrderIndex} failed: {step.Name}");
                 await _testRunRepository.SaveChangesAsync(cancellationToken);
 
+                await PublishProgressAsync(
+                    publishProgressAsync,
+                    testRun,
+                    completedSteps,
+                    steps.Count,
+                    testRun.Summary ?? "Test run failed.",
+                    cancellationToken);
+
                 var failedSteps = await _testRunRepository.GetStepResultsAsync(testRun.Id, cancellationToken);
                 return ToDto(testRun, failedSteps);
             }
-
-            await _testRunRepository.SaveChangesAsync(cancellationToken);
         }
 
         testRun.CompleteAsPassed("All test steps completed successfully.");
         await _testRunRepository.SaveChangesAsync(cancellationToken);
+
+        await PublishProgressAsync(
+            publishProgressAsync,
+            testRun,
+            completedSteps,
+            steps.Count,
+            testRun.Summary ?? "Test run passed.",
+            cancellationToken);
 
         var stepResults = await _testRunRepository.GetStepResultsAsync(testRun.Id, cancellationToken);
 
@@ -259,6 +330,30 @@ public sealed class TestExecutionService
                 .OrderBy(step => step.OrderIndex)
                 .Select(ToDto)
                 .ToList());
+    }
+
+    private static Task PublishProgressAsync(
+        Func<TestRunProgressEvent, CancellationToken, Task>? publishProgressAsync,
+        TestRun run,
+        int completedSteps,
+        int totalSteps,
+        string message,
+        CancellationToken cancellationToken)
+    {
+        if (publishProgressAsync is null)
+            return Task.CompletedTask;
+
+        return publishProgressAsync(
+            new TestRunProgressEvent(
+                run.Id,
+                run.TestProfileId,
+                run.ProfileName,
+                run.Status.ToString(),
+                completedSteps,
+                totalSteps,
+                message,
+                DateTime.UtcNow),
+            cancellationToken);
     }
 
     private static TestStepResultDto ToDto(TestStepResult result)
