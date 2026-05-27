@@ -21,7 +21,6 @@ services:
       context: .
       dockerfile: src/ModbusLab.Api/Dockerfile
     container_name: modbuslab-api
-    profiles: ["full"]
     depends_on:
       postgres:
         condition: service_healthy
@@ -42,7 +41,6 @@ services:
       args:
         VITE_API_BASE_URL: http://localhost:8080
     container_name: modbuslab-frontend
-    profiles: ["full"]
     depends_on:
       - api
     ports:

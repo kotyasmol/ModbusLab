@@ -85,13 +85,19 @@ Useful API endpoints:
 Build and run PostgreSQL, API, and frontend:
 
 ```powershell
-docker compose --profile full up --build
+docker compose up --build
 ```
 
 Docker URLs:
 
 - API/Swagger: `http://localhost:8080/swagger`
 - Frontend: `http://localhost:5173`
+
+Stop the stack:
+
+```powershell
+docker compose down
+```
 
 ## Quality Checks
 
