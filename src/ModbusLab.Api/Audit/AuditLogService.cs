@@ -52,12 +52,49 @@ public sealed class AuditLogService
 
     public async Task<IReadOnlyCollection<AuditLogDto>> GetLatestAsync(
         int count,
+        string? action,
+        string? userName,
+        bool? isSuccess,
+        DateTime? fromUtc,
+        DateTime? toUtc,
         CancellationToken cancellationToken)
     {
         count = Math.Clamp(count, 1, 500);
 
-        return await _dbContext.AuditLogs
+        var query = _dbContext.AuditLogs
             .AsNoTracking()
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(action))
+        {
+            var normalizedAction = action.Trim().ToLower();
+            query = query.Where(log => log.Action.ToLower().Contains(normalizedAction));
+        }
+
+        if (!string.IsNullOrWhiteSpace(userName))
+        {
+            var normalizedUserName = userName.Trim().ToLower();
+            query = query.Where(log =>
+                log.UserName != null &&
+                log.UserName.ToLower().Contains(normalizedUserName));
+        }
+
+        if (isSuccess.HasValue)
+        {
+            query = query.Where(log => log.IsSuccess == isSuccess.Value);
+        }
+
+        if (fromUtc.HasValue)
+        {
+            query = query.Where(log => log.TimestampUtc >= fromUtc.Value);
+        }
+
+        if (toUtc.HasValue)
+        {
+            query = query.Where(log => log.TimestampUtc <= toUtc.Value);
+        }
+
+        return await query
             .OrderByDescending(log => log.TimestampUtc)
             .Take(count)
             .Select(log => new AuditLogDto(
@@ -73,6 +110,20 @@ public sealed class AuditLogService
                 log.IpAddress,
                 log.IsSuccess))
             .ToListAsync(cancellationToken);
+    }
+
+    public Task<IReadOnlyCollection<AuditLogDto>> GetLatestAsync(
+        int count,
+        CancellationToken cancellationToken)
+    {
+        return GetLatestAsync(
+            count,
+            action: null,
+            userName: null,
+            isSuccess: null,
+            fromUtc: null,
+            toUtc: null,
+            cancellationToken);
     }
 
     private static string? TrimDetails(string? details)

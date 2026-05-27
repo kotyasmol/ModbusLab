@@ -1,4 +1,5 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi;
 using Microsoft.IdentityModel.Tokens;
@@ -38,6 +39,23 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<RandomRegisterSimulationWorker>();
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("auth", httpContext =>
+    {
+        var remoteIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            remoteIp,
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            });
+    });
+});
 
 builder.Services.AddCors(options =>
 {
@@ -109,6 +127,7 @@ builder.Services.AddAuthorization(options =>
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<UserManagementService>();
 builder.Services.AddScoped<AuditLogService>();
 builder.Services.AddScoped<DeviceQueryService>();
 builder.Services.AddScoped<ModbusRegisterService>();
@@ -123,6 +142,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseCors("Frontend");
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -130,6 +150,7 @@ app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.MapHealthEndpoints();
 app.MapAuthEndpoints();
+app.MapUserManagementEndpoints();
 app.MapAuditLogEndpoints();
 app.MapDeviceEndpoints();
 app.MapModbusEndpoints();

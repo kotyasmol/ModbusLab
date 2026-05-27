@@ -31,8 +31,14 @@ services:
       Jwt__Issuer: ModbusLab.Dev
       Jwt__Audience: ModbusLab.Frontend
       Jwt__Secret: modbuslab-dev-demo-secret-change-before-production-2026
+      Auth__AllowPublicRegistration: "true"
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/api/health/db || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
   frontend:
     build:
@@ -42,9 +48,15 @@ services:
         VITE_API_BASE_URL: http://localhost:8080
     container_name: modbuslab-frontend
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     ports:
       - "5173:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
 volumes:
   modbuslab-postgres-data:

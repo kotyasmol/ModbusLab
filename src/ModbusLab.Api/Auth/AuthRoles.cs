@@ -5,4 +5,6 @@ public static class AuthRoles
     public const string Viewer = "Viewer";
     public const string Engineer = "Engineer";
     public const string Admin = "Admin";
+
+    public static readonly string[] All = [Viewer, Engineer, Admin];
 }

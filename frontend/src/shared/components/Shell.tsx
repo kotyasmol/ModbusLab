@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import type { AuthUser } from "../../features/auth/types";
+import { canManageUsers, canViewAuditLogs } from "../auth/permissions";
 
-type Section = "dashboard" | "monitoring" | "testing" | "audit";
+type Section = "dashboard" | "monitoring" | "testing" | "users" | "audit";
 
 type ShellProps = {
   activeSection: Section;
@@ -16,6 +17,7 @@ const sectionTitles: Record<Section, string> = {
   dashboard: "Dashboard",
   monitoring: "Monitoring",
   testing: "Testing",
+  users: "Users",
   audit: "Audit logs",
 };
 
@@ -35,7 +37,13 @@ export function Shell({
           <h1>ModbusLab</h1>
         </div>
         <nav className="shell-nav">
-          {(["dashboard", "monitoring", "testing", ...(user?.role === "Admin" ? ["audit" as const] : [])] as Section[]).map((section) => (
+          {([
+            "dashboard",
+            "monitoring",
+            "testing",
+            ...(canManageUsers(user) ? ["users" as const] : []),
+            ...(canViewAuditLogs(user) ? ["audit" as const] : []),
+          ] as Section[]).map((section) => (
             <button
               key={section}
               className={activeSection === section ? "shell-nav-item active" : "shell-nav-item"}

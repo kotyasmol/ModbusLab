@@ -14,13 +14,26 @@ public static class AuditLogEndpoints
 
         group.MapGet("/", async (
             int? count,
+            string? action,
+            string? userName,
+            bool? isSuccess,
+            DateTime? fromUtc,
+            DateTime? toUtc,
             AuditLogService auditLogService,
             CancellationToken cancellationToken) =>
         {
-            var logs = await auditLogService.GetLatestAsync(count ?? 100, cancellationToken);
+            var logs = await auditLogService.GetLatestAsync(
+                count ?? 100,
+                action,
+                userName,
+                isSuccess,
+                fromUtc,
+                toUtc,
+                cancellationToken);
+
             return Results.Ok(logs);
         })
-        .WithSummary("Get latest user audit log entries");
+        .WithSummary("Get filtered user audit log entries");
 
         return app;
     }

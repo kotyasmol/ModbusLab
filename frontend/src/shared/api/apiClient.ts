@@ -23,10 +23,14 @@ async function handleResponse<T>(response: Response): Promise<T> {
   const text = await response.text();
   const data = text ? JSON.parse(text) : null;
 
+  if (response.status === 429) {
+    throw new Error("Too many attempts. Please wait a minute and try again.");
+  }
+
   if (response.status === 401) {
     clearAccessToken();
     unauthorizedHandler?.();
-    throw new Error("Unauthorized");
+    throw data ?? new Error("Unauthorized");
   }
 
   if (!response.ok) {
@@ -65,6 +69,19 @@ export async function apiPost<TRequest, TResponse>(
 ): Promise<TResponse> {
   const response = await fetch(`${API_BASE_URL}${url}`, {
     method: "POST",
+    headers: createHeaders(true),
+    body: JSON.stringify(body),
+  });
+
+  return handleResponse<TResponse>(response);
+}
+
+export async function apiPatch<TRequest, TResponse>(
+  url: string,
+  body: TRequest
+): Promise<TResponse> {
+  const response = await fetch(`${API_BASE_URL}${url}`, {
+    method: "PATCH",
     headers: createHeaders(true),
     body: JSON.stringify(body),
   });

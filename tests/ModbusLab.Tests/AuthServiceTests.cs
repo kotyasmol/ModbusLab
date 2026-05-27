@@ -56,6 +56,42 @@ public sealed class AuthServiceTests
                 CancellationToken.None));
     }
 
+    [Fact]
+    public async Task LoginAsync_DisabledUser_ThrowsUnauthorizedAccessException()
+    {
+        await using var dbContext = CreateDbContext();
+        var service = new AuthService(dbContext, CreateConfiguration());
+        await service.RegisterAsync(
+            new RegisterRequest("disabled-user", null, "Password123!"),
+            CancellationToken.None);
+
+        var user = await dbContext.AppUsers.SingleAsync(candidate => candidate.UserName == "disabled-user");
+        user.Disable();
+        await dbContext.SaveChangesAsync();
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+            service.LoginAsync(
+                new LoginRequest("disabled-user", "Password123!"),
+                CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task RegisterAsync_WhenPublicRegistrationDisabled_ThrowsInvalidOperationException()
+    {
+        await using var dbContext = CreateDbContext();
+        var service = new AuthService(
+            dbContext,
+            CreateConfiguration(new Dictionary<string, string?>
+            {
+                ["Auth:AllowPublicRegistration"] = "false"
+            }));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.RegisterAsync(
+                new RegisterRequest("blocked-user", null, "Password123!"),
+                CancellationToken.None));
+    }
+
     internal static ModbusLabDbContext CreateDbContext()
     {
         var options = new DbContextOptionsBuilder<ModbusLabDbContext>()
@@ -65,15 +101,27 @@ public sealed class AuthServiceTests
         return new ModbusLabDbContext(options);
     }
 
-    internal static IConfiguration CreateConfiguration()
+    internal static IConfiguration CreateConfiguration(
+        IReadOnlyDictionary<string, string?>? overrides = null)
     {
-        return new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
+        var values = new Dictionary<string, string?>
+        {
+            ["Jwt:Issuer"] = "ModbusLab.Tests",
+            ["Jwt:Audience"] = "ModbusLab.Tests",
+            ["Jwt:Secret"] = "modbuslab-tests-secret-change-before-production",
+            ["Auth:AllowPublicRegistration"] = "true"
+        };
+
+        if (overrides is not null)
+        {
+            foreach (var (key, value) in overrides)
             {
-                ["Jwt:Issuer"] = "ModbusLab.Tests",
-                ["Jwt:Audience"] = "ModbusLab.Tests",
-                ["Jwt:Secret"] = "modbuslab-tests-secret-change-before-production"
-            })
+                values[key] = value;
+            }
+        }
+
+        return new ConfigurationBuilder()
+            .AddInMemoryCollection(values)
             .Build();
     }
 }

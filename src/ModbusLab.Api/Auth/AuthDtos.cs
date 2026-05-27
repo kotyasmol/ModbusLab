@@ -13,7 +13,8 @@ public sealed record AuthUserDto(
     Guid Id,
     string UserName,
     string? Email,
-    string Role);
+    string Role,
+    bool IsEnabled);
 
 public sealed record AuthResponse(
     string AccessToken,

@@ -23,6 +23,9 @@ public sealed class AuthService
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
     {
+        if (!_configuration.GetValue("Auth:AllowPublicRegistration", true))
+            throw new InvalidOperationException("Public registration is disabled.");
+
         var userName = NormalizeUserName(request.UserName);
         var email = NormalizeEmail(request.Email);
 
@@ -66,6 +69,9 @@ public sealed class AuthService
 
         if (user is null)
             throw new UnauthorizedAccessException("Invalid user name or password.");
+
+        if (!user.IsEnabled)
+            throw new UnauthorizedAccessException("User account is disabled.");
 
         var passwordResult = _passwordHasher.VerifyHashedPassword(
             user,
@@ -138,7 +144,7 @@ public sealed class AuthService
 
     private static AuthUserDto ToDto(AppUser user)
     {
-        return new AuthUserDto(user.Id, user.UserName, user.Email, user.Role);
+        return new AuthUserDto(user.Id, user.UserName, user.Email, user.Role, user.IsEnabled);
     }
 
     private static string NormalizeUserName(string userName)

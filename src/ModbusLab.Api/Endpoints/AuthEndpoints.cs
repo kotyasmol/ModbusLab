@@ -48,6 +48,7 @@ public static class AuthEndpoints
             }
         })
         .AllowAnonymous()
+        .RequireRateLimiting("auth")
         .WithSummary("Register a local user");
 
         group.MapPost("/login", async (
@@ -80,10 +81,13 @@ public static class AuthEndpoints
                     userNameOverride: request.UserName,
                     cancellationToken: cancellationToken);
 
-                return Results.Unauthorized();
+                return Results.Json(
+                    new { message = "Invalid user name or password, or account is disabled." },
+                    statusCode: StatusCodes.Status401Unauthorized);
             }
         })
         .AllowAnonymous()
+        .RequireRateLimiting("auth")
         .WithSummary("Login and receive JWT access token");
 
         group.MapGet("/me", async (

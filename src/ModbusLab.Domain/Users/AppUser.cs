@@ -12,6 +12,8 @@ public sealed class AppUser
 
     public string Role { get; private set; }
 
+    public bool IsEnabled { get; private set; }
+
     public DateTime CreatedAtUtc { get; private set; }
 
     private AppUser()
@@ -37,6 +39,7 @@ public sealed class AppUser
         Email = string.IsNullOrWhiteSpace(email) ? null : email.Trim();
         PasswordHash = passwordHash;
         Role = role.Trim();
+        IsEnabled = true;
         CreatedAtUtc = DateTime.UtcNow;
     }
 
@@ -46,5 +49,23 @@ public sealed class AppUser
             throw new ArgumentException("Password hash cannot be empty.", nameof(passwordHash));
 
         PasswordHash = passwordHash;
+    }
+
+    public void ChangeRole(string role)
+    {
+        if (string.IsNullOrWhiteSpace(role))
+            throw new ArgumentException("Role cannot be empty.", nameof(role));
+
+        Role = role.Trim();
+    }
+
+    public void Enable()
+    {
+        IsEnabled = true;
+    }
+
+    public void Disable()
+    {
+        IsEnabled = false;
     }
 }

@@ -10,10 +10,12 @@ import { LoginPage } from "./pages/LoginPage";
 import { MonitoringPage } from "./pages/MonitoringPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { TestingPage } from "./pages/TestingPage";
+import { UsersPage } from "./pages/UsersPage";
 import { createModbusHubConnection } from "./shared/api/modbusHubConnection";
 import { useAuth } from "./shared/auth/useAuth";
 import {
   canManageTestProfiles,
+  canManageUsers,
   canRunTests,
   canViewAuditLogs,
   canWriteRegister,
@@ -21,7 +23,7 @@ import {
 import { Shell } from "./shared/components/Shell";
 import "./App.css";
 
-type ActiveSection = "dashboard" | "monitoring" | "testing" | "audit";
+type ActiveSection = "dashboard" | "monitoring" | "testing" | "users" | "audit";
 type AuthSection = "login" | "register";
 
 function formatTimestamp(timestampUtc: string): string {
@@ -87,7 +89,15 @@ function AuthenticatedApp() {
   const testing = useTesting();
 
   const handleSectionChange = (section: ActiveSection) => {
-    setActiveSection(section === "audit" && !canViewAuditLogs(user) ? "dashboard" : section);
+    if (
+      (section === "audit" && !canViewAuditLogs(user)) ||
+      (section === "users" && !canManageUsers(user))
+    ) {
+      setActiveSection("dashboard");
+      return;
+    }
+
+    setActiveSection(section);
   };
 
   useEffect(() => {
@@ -163,6 +173,10 @@ function AuthenticatedApp() {
 
       {activeSection === "audit" && canViewAuditLogs(user) && (
         <AuditLogsPage formatTimestamp={formatTimestamp} />
+      )}
+
+      {activeSection === "users" && canManageUsers(user) && (
+        <UsersPage formatTimestamp={formatTimestamp} />
       )}
     </Shell>
   );

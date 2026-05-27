@@ -5,6 +5,21 @@ type LoginPageProps = {
   onRegisterClick: () => void;
 };
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (typeof error === "object" && error !== null && "message" in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === "string") {
+      return message;
+    }
+  }
+
+  return "Invalid login or password.";
+}
+
 export function LoginPage({ onRegisterClick }: LoginPageProps) {
   const { login } = useAuth();
   const [userName, setUserName] = useState("admin");
@@ -19,8 +34,8 @@ export function LoginPage({ onRegisterClick }: LoginPageProps) {
 
     try {
       await login({ userName, password });
-    } catch {
-      setError("Неверный логин или пароль.");
+    } catch (requestError) {
+      setError(getErrorMessage(requestError));
     } finally {
       setIsSubmitting(false);
     }

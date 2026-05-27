@@ -177,6 +177,13 @@ textarea {
   gap: var(--space-3);
 }
 
+.filter-bar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
 .panel-counter {
   display: inline-grid;
   min-width: 34px;
@@ -299,6 +306,26 @@ textarea {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.users-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.permission-grid {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.permission-row {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: var(--space-2);
+  align-items: center;
+}
+
 .kpi-card strong {
   display: block;
   font-size: 30px;
@@ -405,6 +432,18 @@ tr:last-child td {
   width: 100%;
 }
 
+.inline-toggle {
+  display: inline-flex;
+  grid-template-columns: none;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.inline-toggle input {
+  width: 18px;
+  min-height: 18px;
+}
+
 .mini-chart {
   width: 100%;
   height: 90px;
@@ -430,6 +469,8 @@ tr:last-child td {
 @media (max-width: 1100px) {
   .shell-root,
   .layout,
+  .users-layout,
+  .filter-bar,
   .dashboard-grid,
   .kpi-grid,
   .operation-sections {

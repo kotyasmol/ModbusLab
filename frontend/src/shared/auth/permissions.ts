@@ -15,3 +15,7 @@ export function canManageTestProfiles(user: AuthUser | null): boolean {
 export function canViewAuditLogs(user: AuthUser | null): boolean {
   return user?.role === "Admin";
 }
+
+export function canManageUsers(user: AuthUser | null): boolean {
+  return user?.role === "Admin";
+}

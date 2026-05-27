@@ -345,6 +345,9 @@ public sealed class ModbusLabDbContext : DbContext
                 .HasMaxLength(32)
                 .IsRequired();
 
+            entity.Property(user => user.IsEnabled)
+                .IsRequired();
+
             entity.Property(user => user.CreatedAtUtc)
                 .IsRequired();
 
