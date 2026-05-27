@@ -17,7 +17,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "docker compose up -d --build",
+    command: "docker compose up --build",
     cwd: "..",
     url: "http://localhost:5173",
     reuseExistingServer: true,
