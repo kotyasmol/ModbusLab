@@ -1,12 +1,38 @@
 # ModbusLab
 
-![CI](https://github.com/kotyasmol/ModbusLab/actions/workflows/ci.yml/badge.svg)
-
 ModbusLab это fullstack pet-проект в промышленной тематике для мониторинга, симуляции и автоматизированного тестирования Modbus-like устройств.
 
-Проект показывает не просто CRUD-приложение, а компактную production-style систему: защищённый backend, авторизация, роли пользователей, PostgreSQL, аудит действий, realtime-обновления через SignalR, React-интерфейс оператора, Docker Compose и CI.
+## Скриншоты
 
----
+<table>
+  <tr>
+    <td width="50%">
+      <strong>Dashboard</strong><br />
+      <img src="docs/screenshots/dashboard.jpg" alt="Dashboard" width="100%" />
+    </td>
+    <td width="50%">
+      <strong>Monitoring</strong><br />
+      <img src="docs/screenshots/monitoring.jpg" alt="Monitoring" width="100%" />
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <strong>Testing</strong><br />
+      <img src="docs/screenshots/testing.jpg" alt="Testing" width="100%" />
+    </td>
+    <td width="50%">
+      <strong>Audit Logs</strong><br />
+      <img src="docs/screenshots/audit.jpg" alt="Audit Logs" width="100%" />
+    </td>
+  </tr>
+</table>
+
+<details>
+  <summary>Login screen</summary>
+
+  <img src="docs/screenshots/login.jpg" alt="Login" width="100%" />
+</details>
+
 
 ## Зачем нужен проект
 
@@ -23,8 +49,6 @@ ModbusLab демонстрирует, как такую задачу можно 
 - видеть результат каждого шага;
 - экспортировать отчёты;
 - контролировать действия пользователей через audit log.
-
----
 
 ## Возможности
 
@@ -77,8 +101,6 @@ ModbusLab демонстрирует, как такую задачу можно 
 - Backend unit tests.
 - GitHub Actions для проверки backend и frontend.
 
----
-
 ## Демо-аккаунты
 
 Аккаунты предназначены только для локальной разработки.
@@ -90,8 +112,6 @@ ModbusLab демонстрирует, как такую задачу можно 
 | `viewer` | `Viewer123!` | `Viewer` | Только просмотр мониторинга и истории |
 
 Новые пользователи, зарегистрированные через интерфейс, получают роль `Viewer`.
-
----
 
 ## Технологический стек
 
@@ -120,8 +140,6 @@ ModbusLab демонстрирует, как такую задачу можно 
 - PostgreSQL 17.
 - GitHub Actions.
 - Swagger / OpenAPI.
-
----
 
 ## Архитектура
 
@@ -168,8 +186,6 @@ SignalR Hub
 React dashboard
 ```
 
----
-
 ## Быстрый запуск через Docker
 
 Собрать и запустить PostgreSQL, API и frontend:
@@ -206,7 +222,6 @@ docker compose down -v
 docker compose --profile full up --build
 ```
 
----
 
 ## Локальная разработка без полного Docker-запуска
 
@@ -240,8 +255,6 @@ npm run dev
 | API health | `http://localhost:5199/api/health` |
 | Database health | `http://localhost:5199/api/health/db` |
 
----
-
 ## Demo flow
 
 1. Открыть frontend.
@@ -269,8 +282,6 @@ npm run dev
 | `1306` | Output current | Симулированный выходной ток |
 | `1310` | Error code | Симулированный код ошибки |
 
----
-
 ## Основные API endpoints
 
 | Method | Endpoint | Description |
@@ -294,7 +305,6 @@ npm run dev
 | `GET` | `/api/health` | Проверка состояния API |
 | `GET` | `/api/health/db` | Проверка состояния базы данных |
 
----
 
 ## Проверка качества
 
@@ -322,21 +332,6 @@ docker compose config
 
 GitHub Actions выполняет backend и frontend проверки при push и pull request в `main`.
 
----
-
-## Screenshots
-
-
-```markdown
-![login](docs/screenshots/login.jpg)
-![Dashboard](docs/screenshots/dashboard.jpg)
-![Monitoring](docs/screenshots/monitoring.jpg)
-![Testing](docs/screenshots/testing.jpg)
-![Audit](docs/screenshots/audit.jpg)
-```
-
----
-
 
 ## Roadmap
 
@@ -356,9 +351,7 @@ GitHub Actions выполняет backend и frontend проверки при pu
 - integration tests с PostgreSQL;
 - end-to-end tests через Playwright.
 
----
 
 ## Текущий статус
 
 Portfolio-ready MVP.
-
