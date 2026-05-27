@@ -6,6 +6,7 @@ import type { RegisterDto } from "./features/devices/types";
 import { useTesting } from "./features/testing/useTesting";
 import { AuditLogsPage } from "./pages/AuditLogsPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { DeviceManagementPage } from "./pages/DeviceManagementPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MonitoringPage } from "./pages/MonitoringPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -15,6 +16,7 @@ import { createModbusHubConnection } from "./shared/api/modbusHubConnection";
 import { useAuth } from "./shared/auth/useAuth";
 import {
   canManageTestProfiles,
+  canManageDevices,
   canManageUsers,
   canRunTests,
   canViewAuditLogs,
@@ -23,7 +25,7 @@ import {
 import { Shell } from "./shared/components/Shell";
 import "./App.css";
 
-type ActiveSection = "dashboard" | "monitoring" | "testing" | "users" | "audit";
+type ActiveSection = "dashboard" | "monitoring" | "testing" | "deviceManagement" | "users" | "audit";
 type AuthSection = "login" | "register";
 
 function formatTimestamp(timestampUtc: string): string {
@@ -91,6 +93,7 @@ function AuthenticatedApp() {
   const handleSectionChange = (section: ActiveSection) => {
     if (
       (section === "audit" && !canViewAuditLogs(user)) ||
+      (section === "deviceManagement" && !canManageDevices(user)) ||
       (section === "users" && !canManageUsers(user))
     ) {
       setActiveSection("dashboard");
@@ -174,6 +177,8 @@ function AuthenticatedApp() {
       {activeSection === "audit" && canViewAuditLogs(user) && (
         <AuditLogsPage formatTimestamp={formatTimestamp} />
       )}
+
+      {activeSection === "deviceManagement" && canManageDevices(user) && <DeviceManagementPage />}
 
       {activeSection === "users" && canManageUsers(user) && (
         <UsersPage formatTimestamp={formatTimestamp} />

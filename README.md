@@ -63,6 +63,15 @@ Industrial devices are often checked manually: an operator reads registers, writ
   - an Admin cannot disable their own account.
 - Swagger Bearer auth support.
 
+### Device Management
+
+- Engineer/Admin device administration page.
+- Create device types.
+- Create slave devices with unique Modbus slave addresses.
+- Enable or disable devices.
+- Create register definitions for a device type.
+- Automatically initialize register values for existing devices of that type.
+
 ### Device Monitoring
 
 - Multiple seeded demo devices.
@@ -228,6 +237,11 @@ npm run dev --prefix frontend
 | `PATCH` | `/api/users/{userId}/status` | Admin enable/disable |
 | `GET` | `/api/devices` | Device list |
 | `GET` | `/api/devices/{deviceId}/registers` | Device registers |
+| `GET` | `/api/device-management/types` | Device type list |
+| `POST` | `/api/device-management/types` | Create device type |
+| `POST` | `/api/device-management/devices` | Create slave device |
+| `PATCH` | `/api/device-management/devices/{deviceId}/status` | Enable or disable device |
+| `POST` | `/api/device-management/registers` | Create register definition |
 | `POST` | `/api/modbus/read` | Read register |
 | `POST` | `/api/modbus/write` | Write register |
 | `GET` | `/api/modbus/logs` | Modbus operation log |
@@ -276,6 +290,7 @@ GitHub Actions runs backend, frontend, Docker, and Playwright E2E checks on push
 
 - Fullstack feature work across API, UI, database, Docker, and CI.
 - Realistic RBAC with admin user management.
+- Engineer/Admin device management with validation and audit logging.
 - EF Core migrations and PostgreSQL persistence.
 - Realtime updates with SignalR.
 - Audit logging and health diagnostics.
@@ -285,7 +300,7 @@ GitHub Actions runs backend, frontend, Docker, and Playwright E2E checks on push
 ## Roadmap
 
 - Refresh tokens and active session management.
-- Device management UI/API for device types, slave devices, and registers.
+- Edit/delete workflows for device types, slave devices, and registers.
 - OpenTelemetry traces and structured request logging.
 - Background queue for long-running test execution.
 - Live test progress over SignalR.

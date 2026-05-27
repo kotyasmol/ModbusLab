@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import type { AuthUser } from "../../features/auth/types";
-import { canManageUsers, canViewAuditLogs } from "../auth/permissions";
+import { canManageDevices, canManageUsers, canViewAuditLogs } from "../auth/permissions";
 
-type Section = "dashboard" | "monitoring" | "testing" | "users" | "audit";
+type Section = "dashboard" | "monitoring" | "testing" | "deviceManagement" | "users" | "audit";
 
 type ShellProps = {
   activeSection: Section;
@@ -17,6 +17,7 @@ const sectionTitles: Record<Section, string> = {
   dashboard: "Dashboard",
   monitoring: "Monitoring",
   testing: "Testing",
+  deviceManagement: "Device admin",
   users: "Users",
   audit: "Audit logs",
 };
@@ -41,6 +42,7 @@ export function Shell({
             "dashboard",
             "monitoring",
             "testing",
+            ...(canManageDevices(user) ? ["deviceManagement" as const] : []),
             ...(canManageUsers(user) ? ["users" as const] : []),
             ...(canViewAuditLogs(user) ? ["audit" as const] : []),
           ] as Section[]).map((section) => (

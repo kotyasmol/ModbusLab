@@ -19,3 +19,7 @@ export function canViewAuditLogs(user: AuthUser | null): boolean {
 export function canManageUsers(user: AuthUser | null): boolean {
   return user?.role === "Admin";
 }
+
+export function canManageDevices(user: AuthUser | null): boolean {
+  return user?.role === "Engineer" || user?.role === "Admin";
+}
