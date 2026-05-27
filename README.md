@@ -1,148 +1,150 @@
 # ModbusLab
 
+[English](README.md) | Русский
+
 [![CI](https://github.com/kotyasmol/ModbusLab/actions/workflows/ci.yml/badge.svg)](https://github.com/kotyasmol/ModbusLab/actions/workflows/ci.yml)
 
-ModbusLab is a fullstack industrial monitoring and test automation demo app. It simulates a Modbus-like device laboratory with protected operations, role-based access control, PostgreSQL persistence, realtime register updates, audit logs, device administration, user administration, and an operator dashboard.
+ModbusLab это fullstack-приложение для промышленного мониторинга и автоматизации тестирования. Проект имитирует лабораторию устройств с Modbus-подобной моделью работы: защищённые операции, ролевая модель доступа, хранение данных в PostgreSQL, обновление регистров в реальном времени, аудит действий, администрирование устройств, администрирование пользователей и операторская панель.
 
-The project is built as a portfolio-ready product slice: backend API, frontend UI, database migrations, Docker Compose, CI checks, backend tests, and Playwright E2E coverage.
+Проект сделан как портфолио-ready продуктовый срез: backend API, frontend UI, миграции базы данных, Docker Compose, CI-проверки, backend-тесты и Playwright E2E-покрытие.
 
-## Screenshots
+## Скриншоты
 
-### Login
+### Вход в систему
 
-<img src="docs/screenshots/login.png" alt="Login page" width="100%" />
+<img src="docs/screenshots/login.png" alt="Страница входа" width="100%" />
 
-### Dashboard
+### Панель управления
 
-<img src="docs/screenshots/dashboard.png" alt="Dashboard page" width="100%" />
+<img src="docs/screenshots/dashboard.png" alt="Панель управления" width="100%" />
 
-### Device monitoring
+### Мониторинг устройств
 
-<img src="docs/screenshots/monitoring.png" alt="Device monitoring page" width="100%" />
+<img src="docs/screenshots/monitoring.png" alt="Страница мониторинга устройств" width="100%" />
 
-### Test automation
+### Автоматизация тестирования
 
-<img src="docs/screenshots/testing.png" alt="Test automation page" width="100%" />
+<img src="docs/screenshots/testing.png" alt="Страница автоматизации тестирования" width="100%" />
 
-### Device administration
+### Администрирование устройств
 
-<img src="docs/screenshots/deviceadmin.png" alt="Device administration page" width="100%" />
+<img src="docs/screenshots/deviceadmin.png" alt="Страница администрирования устройств" width="100%" />
 
-### User administration
+### Администрирование пользователей
 
-<img src="docs/screenshots/users.png" alt="User administration page" width="100%" />
+<img src="docs/screenshots/users.png" alt="Страница администрирования пользователей" width="100%" />
 
-### Audit logs
+### Журнал аудита
 
-<img src="docs/screenshots/auditlogs.png" alt="Audit logs page" width="100%" />
+<img src="docs/screenshots/auditlogs.png" alt="Страница журнала аудита" width="100%" />
 
-## Why This Project Exists
+## Зачем нужен этот проект
 
-Industrial devices are often checked manually: an operator reads registers, writes control values, compares measurements with allowed ranges, starts separate test operations, and records the result. This approach is slow, hard to scale, and easy to break through human error.
+Промышленные устройства часто проверяются вручную: оператор читает регистры, записывает управляющие значения, сравнивает измерения с допустимыми диапазонами, запускает отдельные тестовые операции и фиксирует результат. Такой подход медленный, плохо масштабируется и легко ломается из-за человеческого фактора.
 
-ModbusLab turns that workflow into a web platform:
+ModbusLab переносит этот процесс в web-платформу:
 
-- monitor simulated slave devices and their registers;
-- read and write register values with permission checks;
-- run repeatable test scenarios;
-- track live test execution progress;
-- inspect passed and failed test steps;
-- export test run reports;
-- audit user actions;
-- manage users, roles, devices, device types, and register definitions.
+- мониторинг имитированных slave-устройств и их регистров;
+- чтение и запись значений регистров с проверкой прав доступа;
+- запуск повторяемых тестовых сценариев;
+- отслеживание прогресса выполнения тестов в реальном времени;
+- просмотр успешных и неуспешных шагов тестирования;
+- экспорт отчётов по тестовым запускам;
+- аудит действий пользователей;
+- управление пользователями, ролями, устройствами, типами устройств и определениями регистров.
 
-## What This Project Demonstrates
+## Что демонстрирует проект
 
-This repository is not just a frontend mockup. It includes a complete vertical slice of a production-style application:
+Этот репозиторий — не просто frontend-макет. Он включает полноценный вертикальный срез приложения, приближенного к production-подходу:
 
-- React + TypeScript frontend with protected pages and role-based UI;
-- ASP.NET Core backend with Minimal API endpoints;
-- PostgreSQL database with Entity Framework Core migrations;
-- JWT authentication and authorization policies;
-- SignalR realtime updates;
-- background workers for simulated register changes and queued test execution;
-- Docker Compose setup for local startup;
-- automated CI checks;
-- backend unit tests and browser-level E2E tests.
+- React + TypeScript frontend с защищёнными страницами и интерфейсом, зависящим от роли пользователя;
+- ASP.NET Core backend с Minimal API endpoints;
+- PostgreSQL база данных с миграциями Entity Framework Core;
+- JWT-аутентификация и политики авторизации;
+- обновления в реальном времени через SignalR;
+- фоновые worker-сервисы для имитации изменения регистров и очереди выполнения тестов;
+- Docker Compose для локального запуска;
+- автоматические CI-проверки;
+- backend unit-тесты и браузерные E2E-тесты.
 
-## Core Features
+## Основной функционал
 
-### Authentication And RBAC
+### Аутентификация и RBAC
 
-- JWT authentication.
-- Local users with hashed passwords.
-- Roles: `Viewer`, `Engineer`, `Admin`.
-- Protected frontend routes and role-aware navigation.
-- Swagger Bearer authentication support.
-- Public registration controlled by configuration.
-- Rate limiting for login and registration.
-- Safety rules:
-  - disabled users cannot log in;
-  - the last active Admin cannot be disabled or demoted;
-  - an Admin cannot disable their own account.
+- JWT-аутентификация.
+- Локальные пользователи с хешированными паролями.
+- Роли: `Viewer`, `Engineer`, `Admin`.
+- Защищённые frontend-страницы и навигация с учётом роли.
+- Поддержка Bearer-аутентификации в Swagger.
+- Публичная регистрация управляется через конфигурацию.
+- Rate limiting для входа и регистрации.
+- Правила безопасности:
+  - отключённые пользователи не могут войти в систему;
+  - последнего активного администратора нельзя отключить или понизить в роли;
+  - администратор не может отключить собственную учётную запись.
 
-### User Administration
+### Администрирование пользователей
 
-Admin users can:
+Пользователи с ролью Admin могут:
 
-- view the user list;
-- create new users;
-- change user roles;
-- enable or disable user accounts;
-- review user-related actions through audit logs.
+- просматривать список пользователей;
+- создавать новых пользователей;
+- изменять роли пользователей;
+- включать и отключать учётные записи;
+- просматривать связанные с пользователями действия через журнал аудита.
 
-### Device Administration
+### Администрирование устройств
 
-Engineer/Admin users can:
+Пользователи с ролями Engineer/Admin могут:
 
-- create device types;
-- create slave devices with unique Modbus slave addresses;
-- enable or disable devices;
-- create register definitions for a device type;
-- initialize register values for existing devices of that type.
+- создавать типы устройств;
+- создавать slave-устройства с уникальными Modbus slave-адресами;
+- включать и отключать устройства;
+- создавать определения регистров для типа устройства;
+- инициализировать значения регистров для уже существующих устройств этого типа.
 
-### Device Monitoring
+### Мониторинг устройств
 
-- Multiple seeded demo devices.
-- Register definitions with access modes and allowed ranges.
-- Read and write register operations.
-- Permission checks for write operations.
-- Modbus operation log.
-- SignalR realtime register updates.
+- Несколько заранее созданных demo-устройств.
+- Определения регистров с режимами доступа и допустимыми диапазонами.
+- Операции чтения и записи регистров.
+- Проверка прав доступа для операций записи.
+- Журнал Modbus-операций.
+- Обновление значений регистров в реальном времени через SignalR.
 
-### Test Automation
+### Автоматизация тестирования
 
-- Test profiles with ordered steps.
-- Supported step types:
-  - write register;
-  - delay;
-  - check register range.
-- Passing and intentionally failing demo scenarios.
-- Queued background test execution.
-- Live test progress over SignalR.
-- Test run history.
-- CSV report export.
+- Тестовые профили с упорядоченными шагами.
+- Поддерживаемые типы шагов:
+  - запись регистра;
+  - задержка;
+  - проверка значения регистра на попадание в диапазон.
+- Успешные и намеренно падающие demo-сценарии.
+- Очередь выполнения тестов в фоновом режиме.
+- Прогресс выполнения теста в реальном времени через SignalR.
+- История тестовых запусков.
+- Экспорт отчёта в CSV.
 
-### Audit And Diagnostics
+### Аудит и диагностика
 
-- Audit log for authentication, user management, register writes, device management, and testing actions.
-- Audit filtering by action, user, result, and date range in the API.
-- Health endpoints for API and database.
-- Docker healthchecks for PostgreSQL, API, and frontend.
+- Журнал аудита для аутентификации, управления пользователями, записи регистров, управления устройствами и действий, связанных с тестированием.
+- Фильтрация аудита по действию, пользователю, результату и диапазону дат в API.
+- Health endpoints для API и базы данных.
+- Docker healthchecks для PostgreSQL, API и frontend.
 
-## Application Pages
+## Страницы приложения
 
-| Page | Purpose | Typical Access |
+| Страница | Назначение | Типичный доступ |
 | --- | --- | --- |
-| Login | Sign in or switch to registration | Public |
-| Dashboard | High-level overview of devices, latest logs, profiles, and test runs | Viewer / Engineer / Admin |
-| Monitoring | Register values, read/write operations, and Modbus log | Viewer can read, Engineer/Admin can write |
-| Testing | Test profiles, test execution, progress, history, and CSV reports | Engineer / Admin |
-| Device Admin | Device types, devices, register definitions, and device status | Engineer / Admin |
-| Users | User creation, role changes, account status management | Admin |
-| Audit Logs | Security and business action history | Admin |
+| Login | Вход в систему или переход к регистрации | Public |
+| Dashboard | Общий обзор устройств, последних логов, профилей и тестовых запусков | Viewer / Engineer / Admin |
+| Monitoring | Значения регистров, операции чтения/записи и Modbus-журнал | Viewer может читать, Engineer/Admin могут записывать |
+| Testing | Тестовые профили, запуск тестов, прогресс, история и CSV-отчёты | Engineer / Admin |
+| Device Admin | Типы устройств, устройства, определения регистров и статус устройств | Engineer / Admin |
+| Users | Создание пользователей, изменение ролей и управление статусом аккаунтов | Admin |
+| Audit Logs | История действий безопасности и бизнес-операций | Admin |
 
-## Tech Stack
+## Технологический стек
 
 ### Backend
 
@@ -164,14 +166,14 @@ Engineer/Admin users can:
 - Playwright
 - Custom CSS
 
-### Infrastructure
+### Инфраструктура
 
 - Docker Compose
 - PostgreSQL 17
 - GitHub Actions
 - Swagger / OpenAPI
 
-## Architecture
+## Архитектура
 
 ```text
 React + TypeScript UI
@@ -189,7 +191,7 @@ Domain entities and business rules
 PostgreSQL
 ```
 
-Repository layout:
+Структура репозитория:
 
 ```text
 src/
@@ -207,27 +209,27 @@ frontend/
 
 ```
 
-## Demo Accounts
+## Demo-аккаунты
 
-Use these accounts for local development only.
+Эти аккаунты предназначены только для локальной разработки.
 
 | Login | Password | Role | Access |
 | --- | --- | --- | --- |
-| `admin` | `Admin123!` | `Admin` | Full access, users, audit logs, device management, test profile management |
-| `engineer` | `Engineer123!` | `Engineer` | Monitoring, register writes, test execution, device management |
-| `viewer` | `Viewer123!` | `Viewer` | Read-only monitoring and history |
+| `admin` | `Admin123!` | `Admin` | Полный доступ, пользователи, аудит, управление устройствами, управление тестовыми профилями |
+| `engineer` | `Engineer123!` | `Engineer` | Мониторинг, запись регистров, запуск тестов, управление устройствами |
+| `viewer` | `Viewer123!` | `Viewer` | Только чтение мониторинга и истории |
 
-## Quick Start With Docker
+## Быстрый запуск через Docker
 
-Build and run PostgreSQL, API, and frontend:
+Сборка и запуск PostgreSQL, API и frontend:
 
 ```powershell
 docker compose up --build
 ```
 
-Default URLs:
+Адреса по умолчанию:
 
-| Service | URL |
+| Сервис | URL |
 | --- | --- |
 | Frontend | `http://localhost:5173` |
 | Swagger | `http://localhost:8080/swagger` |
@@ -235,41 +237,41 @@ Default URLs:
 | Database health | `http://localhost:8080/api/health/db` |
 | PostgreSQL | `localhost:5433` |
 
-Stop containers:
+Остановить контейнеры:
 
 ```powershell
 docker compose down
 ```
 
-Reset local database volume:
+Сбросить локальный volume базы данных:
 
 ```powershell
 docker compose down -v
 ```
 
-## Local Development
+## Локальная разработка
 
-Start PostgreSQL only:
+Запустить только PostgreSQL:
 
 ```powershell
 docker compose up -d postgres
 ```
 
-Run the API:
+Запустить API:
 
 ```powershell
 dotnet restore
 dotnet run --project src/ModbusLab.Api
 ```
 
-Run the frontend:
+Запустить frontend:
 
 ```powershell
 npm install --prefix frontend
 npm run dev --prefix frontend
 ```
 
-## Quality Checks
+## Проверки качества
 
 Backend:
 
@@ -300,58 +302,46 @@ docker compose config
 docker compose build
 ```
 
-GitHub Actions runs backend, frontend, Docker, and Playwright E2E checks on push and pull requests to `main`.
+GitHub Actions запускает backend-, frontend-, Docker- и Playwright E2E-проверки при push и pull request в ветку `main`.
 
-## Important API Endpoints
+## Важные API endpoints
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| `POST` | `/api/auth/login` | Login and receive JWT |
-| `POST` | `/api/auth/register` | Public registration when enabled |
-| `GET` | `/api/auth/me` | Current authenticated user |
-| `GET` | `/api/users` | Admin user list |
-| `POST` | `/api/users` | Admin user creation |
-| `PATCH` | `/api/users/{userId}/role` | Admin role change |
-| `PATCH` | `/api/users/{userId}/status` | Admin enable/disable |
-| `GET` | `/api/devices` | Device list |
-| `GET` | `/api/devices/{deviceId}/registers` | Device registers |
-| `GET` | `/api/device-management/types` | Device type list |
-| `POST` | `/api/device-management/types` | Create device type |
-| `POST` | `/api/device-management/devices` | Create slave device |
-| `PATCH` | `/api/device-management/devices/{deviceId}/status` | Enable or disable device |
-| `POST` | `/api/device-management/registers` | Create register definition |
-| `POST` | `/api/modbus/read` | Read register |
-| `POST` | `/api/modbus/write` | Write register |
-| `GET` | `/api/modbus/logs` | Modbus operation log |
-| `GET` | `/api/test-profiles` | Test profiles |
-| `POST` | `/api/test-profiles` | Create test profile |
-| `POST` | `/api/test-profiles/{profileId}/run` | Run test profile |
-| `GET` | `/api/test-runs` | Latest test runs |
-| `GET` | `/api/test-runs/{runId}/report.csv` | Export CSV report |
-| `GET` | `/api/audit-logs` | Filtered audit logs |
-| `GET` | `/api/health` | API health |
-| `GET` | `/api/health/db` | Database health |
-| `GET` | `/hubs/modbus` | SignalR hub for realtime updates |
+| `POST` | `/api/auth/login` | Вход в систему и получение JWT |
+| `POST` | `/api/auth/register` | Публичная регистрация, если она включена |
+| `GET` | `/api/auth/me` | Текущий аутентифицированный пользователь |
+| `GET` | `/api/users` | Список пользователей для Admin |
+| `POST` | `/api/users` | Создание пользователя администратором |
+| `PATCH` | `/api/users/{userId}/role` | Изменение роли пользователя администратором |
+| `PATCH` | `/api/users/{userId}/status` | Включение или отключение пользователя администратором |
+| `GET` | `/api/devices` | Список устройств |
+| `GET` | `/api/devices/{deviceId}/registers` | Регистры устройства |
+| `GET` | `/api/device-management/types` | Список типов устройств |
+| `POST` | `/api/device-management/types` | Создание типа устройства |
+| `POST` | `/api/device-management/devices` | Создание slave-устройства |
+| `PATCH` | `/api/device-management/devices/{deviceId}/status` | Включение или отключение устройства |
+| `POST` | `/api/device-management/registers` | Создание определения регистра |
+| `POST` | `/api/modbus/read` | Чтение регистра |
+| `POST` | `/api/modbus/write` | Запись регистра |
+| `GET` | `/api/modbus/logs` | Журнал Modbus-операций |
+| `GET` | `/api/test-profiles` | Тестовые профили |
+| `POST` | `/api/test-profiles` | Создание тестового профиля |
+| `POST` | `/api/test-profiles/{profileId}/run` | Запуск тестового профиля |
+| `GET` | `/api/test-runs` | Последние тестовые запуски |
+| `GET` | `/api/test-runs/{runId}/report.csv` | Экспорт CSV-отчёта |
+| `GET` | `/api/audit-logs` | Отфильтрованный журнал аудита |
+| `GET` | `/api/health` | Проверка состояния API |
+| `GET` | `/api/health/db` | Проверка состояния базы данных |
+| `GET` | `/hubs/modbus` | SignalR hub для обновлений в реальном времени |
 
-## Portfolio Highlights
-
-- Fullstack feature work across API, UI, database, Docker, and CI.
-- Realistic RBAC with Admin, Engineer, and Viewer roles.
-- Protected write operations for industrial-style register control.
-- Engineer/Admin device management with validation and audit logging.
-- EF Core migrations and PostgreSQL persistence.
-- Realtime updates with SignalR.
-- Background workers for simulated device activity and test execution.
-- Audit logging and health diagnostics.
-- Unit tests and browser-level E2E tests.
-- Docker Compose setup that starts the full product locally.
 
 ## Roadmap
 
-- Refresh tokens and active session management.
-- Edit/delete workflows for device types, slave devices, and registers.
-- OpenTelemetry traces and structured request logging.
-- More detailed dashboard analytics.
-- PDF test reports.
-- Integration tests against PostgreSQL.
-- Real Modbus RTU/TCP adapter behind the current application service contracts.
+- Refresh tokens и управление активными сессиями.
+- Редактирование и удаление типов устройств, slave-устройств и регистров.
+- OpenTelemetry traces и структурированное логирование запросов.
+- Более подробная аналитика на dashboard.
+- PDF-отчёты по тестам.
+- Интеграционные тесты с PostgreSQL.
+- Реальный Modbus RTU/TCP adapter за текущими контрактами application services.
